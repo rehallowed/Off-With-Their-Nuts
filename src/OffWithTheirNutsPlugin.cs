@@ -22,7 +22,7 @@ namespace OffWithTheirNuts
     {
         internal const string PluginId = "rehallowed.OffWithTheirNuts";
         internal const string PluginName = "Off With Their Nuts!";
-        internal const string PluginVersion = "1.0.21.1";
+        internal const string PluginVersion = "0.1.0";
         // Keep the original Valheim stable hash so existing worlds retain their flags.
         private const int SterileKey = 516296702;
         private const string SterileStatus = "<color=#FFC6A8>стерилизован</color>";
