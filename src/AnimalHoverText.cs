@@ -1,46 +1,36 @@
+using System;
 using HarmonyLib;
 
 namespace OffWithTheirNuts {
     public sealed partial class OffWithTheirNutsPlugin {
-        private string lastStatus;
-        private string lastSterileStatus;
+        private string lastHoverText;
+        private string lastSterileHoverText;
 
-        private string WithSterileStatus(string status) {
-            const string sterileStatus = "<color=#FFC6A8>стерилизован</color>";
-            switch (status) {
-                case "$hud_tamehungry": {
-                    return "$hud_tamehungry, " + sterileStatus;
-                }
-                case "$hud_tamehappy": {
-                    return "$hud_tamehappy, " + sterileStatus;
-                }
-                case "$hud_tamefrightened": {
-                    return "$hud_tamefrightened, " + sterileStatus;
-                }
-                case "$hud_tameinprogress": {
-                    return "$hud_tameinprogress, " + sterileStatus;
-                }
-                case "":
-                case null: {
-                    return sterileStatus;
-                }
+        private string WithSterileStatus(string hoverText) {
+            if (hoverText != lastHoverText) {
+                const string sterileLine = "\n<color=#FFC6A8>Стерилизован</color>";
+                // Valheim starts each interaction hint on a new line with an opening bracket.
+                int firstHint = hoverText.IndexOf(
+                    value: "\n[",
+                    comparisonType: StringComparison.Ordinal
+                );
+                lastSterileHoverText = firstHint >= 0 ? hoverText.Insert(
+                    startIndex: firstHint,
+                    value: sterileLine
+                ) : hoverText + sterileLine;
+                lastHoverText = hoverText;
             }
-
-            if (status != lastStatus) {
-                lastStatus = status;
-                lastSterileStatus = status + ", " + sterileStatus;
-            }
-            return lastSterileStatus;
+            return lastSterileHoverText;
         }
 
         [HarmonyPatch(
             declaringType: typeof(Tameable),
-            methodName: "GetStatusString"
+            methodName: "GetHoverText"
         )]
-        private static class StatusPatch {
+        private static class HoverTextPatch {
             private static void Postfix(ref string __result, ZNetView ___m_nview) {
                 OffWithTheirNutsPlugin mod = instance;
-                if (!(mod is null) && mod.RestrictionsActive && IsSterile(___m_nview?.GetZDO())) {
+                if (mod != null && mod.RestrictionsActive && !string.IsNullOrEmpty(__result) && IsSterile(___m_nview?.GetZDO())) {
                     __result = mod.WithSterileStatus(__result);
                 }
             }

@@ -25,7 +25,7 @@ namespace OffWithTheirNuts {
             var duration = Stopwatch.StartNew();
             ServerSync.Notify(
                 peer: requester,
-                message: "Снимаем стерилизацию с животных…"
+                message: "Снимаем стерилизацию с животных..."
             );
             StartCoroutine(
                 ResetAnimals(
@@ -67,14 +67,14 @@ namespace OffWithTheirNuts {
                 string animalWord = result.Changed % 10 == 1 && result.Changed % 100 != 11
                     ? "животного" : "животных";
                 string message = string.Format(
-                    provider: CultureInfo.GetCultureInfo("ru-RU"),
-                    format: "Стерилизация снята у {0} {1} за {2:0.00} с.",
+                    provider: CultureInfo.InvariantCulture,
+                    format: "Стерилизация снята у {0} {1} за {2:0.00}с",
                     arg0: result.Changed,
                     arg1: animalWord,
                     arg2: duration.Elapsed.TotalSeconds
                 );
                 if (result.Unconfirmed > 0) {
-                    message += " Не подтверждено снятие у " + result.Unconfirmed + ".";
+                    message += " (не подтверждено снятие у " + result.Unconfirmed + ")";
                 }
                 ServerSync.Notify(
                     peer: requester,

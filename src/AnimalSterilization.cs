@@ -74,7 +74,7 @@ namespace OffWithTheirNuts {
                 );
                 string message = "Не удалось подтвердить изменение для животного.";
                 if (result.Changed == 1) {
-                    message = requestedState ? "Животное стерилизовано." : "Стерилизация снята.";
+                    message = requestedState ? "Животное стерилизовано" : "Животное снова фертильно";
                 }
                 ServerSync.Notify(
                     peer: requester,
