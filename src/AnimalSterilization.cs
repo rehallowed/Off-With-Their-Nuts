@@ -9,7 +9,7 @@ namespace OffWithTheirNuts {
 
         private void ToggleTarget(Character target) {
             ZNetView view = target.GetComponent<ZNetView>();
-            if (view == null || !view.IsValid() || !IsSterilizable(target.gameObject)) {
+            if (view == null || !view.IsValid() || !IsSterilizable(target.GetComponent<Tameable>())) {
                 return;
             }
 
@@ -85,10 +85,9 @@ namespace OffWithTheirNuts {
             }
         }
 
-        internal static bool IsSterilizable(GameObject target) {
-            Tameable tameable = target.GetComponent<Tameable>();
+        private static bool IsSterilizable(Tameable tameable) {
             return tameable != null && tameable.IsTamed() &&
-                target.GetComponent<Procreation>() != null && target.GetComponent<Growup>() == null;
+                tameable.GetComponent<Procreation>() != null && tameable.GetComponent<Growup>() == null;
         }
 
         private static bool IsSterilityChangeAllowed(ZNetPeer requester, ZDO target) {
@@ -96,7 +95,8 @@ namespace OffWithTheirNuts {
             if (requester == null) {
                 Player local = Player.m_localPlayer;
                 Character hovered = local != null ? local.GetHoverCreature() : null;
-                return hovered != null && hovered.gameObject == targetObject && IsSterilizable(targetObject);
+                return hovered != null && hovered.gameObject == targetObject &&
+                    IsSterilizable(targetObject.GetComponent<Tameable>());
             }
 
             ZDO player = ServerSync.GetRequestingPlayer(requester);
@@ -120,7 +120,7 @@ namespace OffWithTheirNuts {
             }
 
             if (targetObject != null) {
-                if (!IsSterilizable(targetObject)) {
+                if (!IsSterilizable(targetObject.GetComponent<Tameable>())) {
                     return false;
                 }
             } else {

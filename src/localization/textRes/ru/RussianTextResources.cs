@@ -4,6 +4,10 @@ namespace OffWithTheirNuts {
 
         internal override string SterileStatus =>
             "Стерилизован";
+        internal override string SterilizeHint =>
+            "Стерилизовать";
+        internal override string RestoreFertilityHint =>
+            "Вернуть фертильность";
         internal override string BreedingCategory =>
             "Размножение";
         internal override string WorldManagementCategory =>

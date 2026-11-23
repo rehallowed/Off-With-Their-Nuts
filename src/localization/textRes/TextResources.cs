@@ -27,6 +27,8 @@ namespace OffWithTheirNuts {
         internal abstract PluralRules PluralRules { get; }
 
         internal abstract string SterileStatus { get; }
+        internal abstract string SterilizeHint { get; }
+        internal abstract string RestoreFertilityHint { get; }
         internal abstract string BreedingCategory { get; }
         internal abstract string WorldManagementCategory { get; }
         internal abstract string EnabledName { get; }

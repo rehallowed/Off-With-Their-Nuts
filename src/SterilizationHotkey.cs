@@ -14,6 +14,8 @@ namespace OffWithTheirNuts {
         private InputAction shortcutAction;
         private KeyCode[] shortcutModifiers;
 
+        internal string ShortcutLabel { get; private set; }
+
         internal SterilizationHotkey(Func<bool> restrictionsActive, Action<Character> onTargetSelected) {
             this.restrictionsActive = restrictionsActive;
             this.onTargetSelected = onTargetSelected;
@@ -66,9 +68,17 @@ namespace OffWithTheirNuts {
             );
             shortcutAction.performed += OnShortcutPressed;
             shortcutAction.Enable();
+
+            string mainKeyLabel = binding.MainKey.ToString();
+            string modifierLabel = string.Join(
+                separator: " + ",
+                values: shortcutModifiers
+            );
+            ShortcutLabel = modifierLabel.Length == 0 ? mainKeyLabel : modifierLabel + " + " + mainKeyLabel;
         }
 
         public void Dispose() {
+            ShortcutLabel = null;
             if (shortcutAction == null) {
                 return;
             }
