@@ -50,10 +50,11 @@ namespace OffWithTheirNuts {
                 arg1: binding.MainKey,
                 arg2: false
             );
-            if (string.IsNullOrEmpty(path) || path.EndsWith(
+            bool isKeyPathValid = !string.IsNullOrEmpty(path) && !path.EndsWith(
                 value: "/None",
                 comparisonType: StringComparison.OrdinalIgnoreCase
-            )) {
+            );
+            if (!isKeyPathValid) {
                 return;
             }
 
@@ -79,16 +80,18 @@ namespace OffWithTheirNuts {
 
         private void OnShortcutPressed(InputAction.CallbackContext context) {
             Player player = Player.m_localPlayer;
-            if (!restrictionsActive() || player == null || !Application.isFocused ||
-                Cursor.lockState != CursorLockMode.Locked || !takeInput(player)) {
+            bool shouldIgnoreInput = !restrictionsActive() || player == null || !Application.isFocused ||
+                Cursor.lockState != CursorLockMode.Locked || !takeInput(player);
+            if (shouldIgnoreInput) {
                 return;
             }
 
             foreach (KeyCode modifier in shortcutModifiers) {
-                if (!ZInput.GetKey(
+                bool isModifierPressed = ZInput.GetKey(
                     key: modifier,
                     logWarning: false
-                )) {
+                );
+                if (!isModifierPressed) {
                     return;
                 }
             }

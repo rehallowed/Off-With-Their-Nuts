@@ -66,10 +66,11 @@ namespace OffWithTheirNuts {
                 return true;
             }
 
-            if (remaining != sizeof(byte) || !Enum.IsDefined(
+            bool isNoticeValid = remaining == sizeof(byte) && Enum.IsDefined(
                 enumType: typeof(PlayerNoticeKind),
                 value: kind
-            )) {
+            );
+            if (!isNoticeValid) {
                 return false;
             }
             notice = new PlayerNotice(kind);

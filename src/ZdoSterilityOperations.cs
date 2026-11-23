@@ -11,19 +11,22 @@ namespace OffWithTheirNuts {
         }
 
         internal static void ClearPregnancy(ZDO zdo) {
-            if (zdo.GetLong(
+            long pregnancy = zdo.GetLong(
                 hash: ZDOVars.s_pregnant,
                 defaultValue: 0L
-            ) != 0L) {
+            );
+            if (pregnancy != 0L) {
                 zdo.Set(
                     hash: ZDOVars.s_pregnant,
                     value: 0L
                 );
             }
-            if (zdo.GetInt(
+
+            int lovePoints = zdo.GetInt(
                 hash: ZDOVars.s_lovePoints,
                 defaultValue: 0
-            ) != 0) {
+            );
+            if (lovePoints != 0) {
                 zdo.Set(
                     hash: ZDOVars.s_lovePoints,
                     value: 0

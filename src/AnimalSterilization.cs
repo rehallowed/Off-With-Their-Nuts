@@ -33,10 +33,11 @@ namespace OffWithTheirNuts {
             }
 
             ZDO target = ZDOMan.instance?.GetZDO(id);
-            if (target == null || !IsSterilityChangeAllowed(
+            bool isChangeAllowed = target != null && IsSterilityChangeAllowed(
                 requester: requester,
                 target: target
-            )) {
+            );
+            if (!isChangeAllowed) {
                 serverSync.Notify(
                     peer: requester,
                     kind: PlayerNoticeKind.TargetUnavailable
@@ -122,12 +123,16 @@ namespace OffWithTheirNuts {
                 if (!IsSterilizable(targetObject)) {
                     return false;
                 }
-            } else if (!target.GetBool(
-                hash: ZDOVars.s_tamed,
-                defaultValue: false
-            ) || targetPrefab.GetComponent<Tameable>() == null ||
-                targetPrefab.GetComponent<Procreation>() == null || targetPrefab.GetComponent<Growup>() != null) {
-                return false;
+            } else {
+                bool isTamed = target.GetBool(
+                    hash: ZDOVars.s_tamed,
+                    defaultValue: false
+                );
+                bool isEligible = isTamed && targetPrefab.GetComponent<Tameable>() != null &&
+                    targetPrefab.GetComponent<Procreation>() != null && targetPrefab.GetComponent<Growup>() == null;
+                if (!isEligible) {
+                    return false;
+                }
             }
 
             float distance = playerTemplate.m_maxInteractDistance + Mathf.Max(
@@ -190,8 +195,9 @@ namespace OffWithTheirNuts {
                 if (sync == null || !sync.HasWorld) {
                     return true;
                 }
-                if (sync.SettingsReady &&
-                    (!sync.RestrictionsEnabled || !ZdoSterilityOperations.IsSterile(___m_nview?.GetZDO()))) {
+                bool shouldUseOriginal = sync.SettingsReady &&
+                    (!sync.RestrictionsEnabled || !ZdoSterilityOperations.IsSterile(___m_nview?.GetZDO()));
+                if (shouldUseOriginal) {
                     return true;
                 }
 

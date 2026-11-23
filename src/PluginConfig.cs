@@ -111,10 +111,11 @@ namespace OffWithTheirNuts {
                     if (type.FullName != "ConfigurationManager.ConfigurationManager") {
                         continue;
                     }
-                    if (AccessTools.Property(
+                    bool isDisplayingWindow = AccessTools.Property(
                         type: type,
                         name: "DisplayingWindow"
-                    )?.GetValue(manager) is true) {
+                    )?.GetValue(manager) is true;
+                    if (isDisplayingWindow) {
                         AccessTools.Method(
                             type: type,
                             name: "BuildSettingList",

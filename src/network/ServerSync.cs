@@ -121,18 +121,29 @@ namespace OffWithTheirNuts {
         }
 
         private void Receive(ZNetPeer peer, ZPackage package) {
-            if (network == null || package == null || package.Size() < 1 || package.Size() > MaxPacketSize ||
-                !peer.IsReady() || !ReferenceEquals(
-                    objA: network.GetPeer(peer.m_uid),
-                    objB: peer
-                )) {
+            bool shouldIgnorePacket = network == null || package == null || package.Size() < 1 ||
+                package.Size() > MaxPacketSize || !peer.IsReady();
+            if (shouldIgnorePacket) {
+                return;
+            }
+
+            bool isRegisteredPeer = ReferenceEquals(
+                objA: network.GetPeer(peer.m_uid),
+                objB: peer
+            );
+            if (!isRegisteredPeer) {
                 return;
             }
 
             try {
                 NetworkCommand command = (NetworkCommand)package.ReadByte();
                 int remaining = package.Size() - package.GetPos();
-                if (network.IsServer()) {
+                bool isServer = network.IsServer();
+                bool isCurrentServer = !isServer && peer.m_server && ReferenceEquals(
+                    objA: network.GetServerPeer(),
+                    objB: peer
+                );
+                if (isServer) {
                     switch (command) {
                         case NetworkCommand.AskSettings when remaining == 0: {
                             SendSettings(peer);
@@ -155,10 +166,7 @@ namespace OffWithTheirNuts {
                             break;
                         }
                     }
-                } else if (peer.m_server && ReferenceEquals(
-                    objA: network.GetServerPeer(),
-                    objB: peer
-                )) {
+                } else if (isCurrentServer) {
                     switch (command) {
                         case NetworkCommand.Settings when remaining == 2: {
                             RestrictionsEnabled = package.ReadBool();
@@ -175,11 +183,12 @@ namespace OffWithTheirNuts {
                             break;
                         }
                         case NetworkCommand.LocalizedNotice: {
-                            if (PlayerNotice.TryRead(
+                            bool wasRead = PlayerNotice.TryRead(
                                 package: package,
                                 remaining: remaining,
                                 notice: out PlayerNotice notice
-                            )) {
+                            );
+                            if (wasRead) {
                                 showNotice(notice);
                             }
                             break;
@@ -281,6 +290,13 @@ namespace OffWithTheirNuts {
             }
         }
 
+        private bool IsCurrentNetwork(ZNet current) {
+            return ReferenceEquals(
+                objA: network,
+                objB: current
+            );
+        }
+
         [HarmonyPatch(
             declaringType: typeof(ZNet),
             methodName: "Awake"
@@ -298,10 +314,7 @@ namespace OffWithTheirNuts {
         private static class WorldDestroyPatch {
             private static void Prefix(ZNet __instance) {
                 ServerSync sync = OffWithTheirNutsPlugin.ActiveServerSync;
-                if (sync != null && ReferenceEquals(
-                    objA: sync.network,
-                    objB: __instance
-                )) {
+                if (sync != null && sync.IsCurrentNetwork(__instance)) {
                     sync.CloseWorld();
                 }
             }
@@ -314,10 +327,7 @@ namespace OffWithTheirNuts {
         private static class PeerConnectionPatch {
             private static void Postfix(ZNet __instance, ZNetPeer __0) {
                 ServerSync sync = OffWithTheirNutsPlugin.ActiveServerSync;
-                if (sync != null && ReferenceEquals(
-                    objA: sync.network,
-                    objB: __instance
-                )) {
+                if (sync != null && sync.IsCurrentNetwork(__instance)) {
                     sync.RegisterPeer(__0);
                 }
             }
@@ -330,17 +340,15 @@ namespace OffWithTheirNuts {
         private static class PeerInfoPatch {
             private static void Postfix(ZNet __instance, ZRpc __0) {
                 ServerSync sync = OffWithTheirNutsPlugin.ActiveServerSync;
-                if (sync == null || !ReferenceEquals(
-                    objA: sync.network,
-                    objB: __instance
-                ) || __instance.IsServer()) {
+                if (sync == null || !sync.IsCurrentNetwork(__instance) || __instance.IsServer()) {
                     return;
                 }
                 ZNetPeer server = __instance.GetServerPeer();
-                if (server != null && ReferenceEquals(
+                bool isServerRpc = server != null && ReferenceEquals(
                     objA: server.m_rpc,
                     objB: __0
-                )) {
+                );
+                if (isServerRpc) {
                     Send(
                         peer: server,
                         command: NetworkCommand.AskSettings

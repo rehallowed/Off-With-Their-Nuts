@@ -80,13 +80,14 @@ namespace OffWithTheirNuts {
 
                 bool stateMatches = ZdoSterilityOperations.IsSterile(zdo) == requestedState;
                 if (!stateMatches && !zdo.IsOwner() && zdo.HasOwner()) {
-                    if (TryQueueOwnerWrite(
+                    bool wasQueued = TryQueueOwnerWrite(
                         network: network,
                         zdo: zdo,
                         write: ref write,
                         byOwner: byOwner,
                         now: now
-                    )) {
+                    );
+                    if (wasQueued) {
                         remaining[i] = write;
                     }
                     continue;
@@ -124,10 +125,11 @@ namespace OffWithTheirNuts {
             write.LastOwner = owner;
             write.LastRevision = revision;
             write.ResendAt = now + ResendInterval;
-            if (!byOwner.TryGetValue(
+            bool hasQueuedWrites = byOwner.TryGetValue(
                 key: peer,
                 value: out List<TargetWrite> queued
-            )) {
+            );
+            if (!hasQueuedWrites) {
                 queued = new List<TargetWrite>();
                 byOwner.Add(
                     key: peer,
@@ -194,9 +196,10 @@ namespace OffWithTheirNuts {
             bool requestedState = packet.ReadBool();
             double expiresAt = packet.ReadDouble();
             int count = packet.ReadInt();
-            if (count < 1 || count > MaxBatch || ZDOMan.instance == null ||
+            bool isInvalidBatch = count < 1 || count > MaxBatch || ZDOMan.instance == null ||
                 network.GetTimeSeconds() > expiresAt ||
-                packet.Size() - packet.GetPos() != count * (TargetWireSize + sizeof(ushort))) {
+                packet.Size() - packet.GetPos() != count * (TargetWireSize + sizeof(ushort));
+            if (isInvalidBatch) {
                 return;
             }
 
