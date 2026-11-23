@@ -13,11 +13,13 @@ namespace OffWithTheirNuts {
         private const string KeyToggleSterilization = "keyToggleSterilization";
         private const string KeySterilizationEffects = "keySterilizationEffects";
         private const string KeyResetRestrictions = "keyResetRestrictions";
+        private const string KeyRemoveModData = "keyRemoveModData";
 
         private readonly ConfigurationManagerAttributes enabledAttributes = new ConfigurationManagerAttributes();
         private readonly ConfigurationManagerAttributes shortcutAttributes = new ConfigurationManagerAttributes();
         private readonly ConfigurationManagerAttributes effectsAttributes = new ConfigurationManagerAttributes();
         private readonly ConfigurationManagerAttributes resetAttributes = new ConfigurationManagerAttributes();
+        private readonly ConfigurationManagerAttributes cleanupAttributes = new ConfigurationManagerAttributes();
         private ConfigEntry<bool> enabledSetting;
         private ConfigEntry<KeyboardShortcut> shortcutSetting;
         private ConfigEntry<bool> effectsSetting;
@@ -27,6 +29,9 @@ namespace OffWithTheirNuts {
             enabledAttributes.HideDefaultButton = true;
             resetAttributes.CustomDrawer = DrawReset;
             resetAttributes.HideDefaultButton = true;
+            cleanupAttributes.CustomDrawer = DrawCleanup;
+            cleanupAttributes.HideDefaultButton = true;
+            cleanupAttributes.Order = int.MinValue;
             UpdateConfigLabels();
 
             enabledSetting = Config.Bind(
@@ -69,6 +74,16 @@ namespace OffWithTheirNuts {
                     tags: resetAttributes
                 )
             );
+            Config.Bind(
+                section: KeySectionWorldManagement,
+                key: KeyRemoveModData,
+                defaultValue: "",
+                configDescription: new ConfigDescription(
+                    description: cleanupAttributes.Description,
+                    acceptableValues: null,
+                    tags: cleanupAttributes
+                )
+            );
             enabledSetting.SettingChanged += OnEnabledChanged;
             shortcutSetting.SettingChanged += OnShortcutChanged;
         }
@@ -94,6 +109,11 @@ namespace OffWithTheirNuts {
                 category: textResources.WorldManagementCategory,
                 name: textResources.ResetName,
                 description: textResources.ResetDescription
+            );
+            cleanupAttributes.SetText(
+                category: textResources.WorldManagementCategory,
+                name: textResources.CleanupName,
+                description: textResources.CleanupDescription
             );
         }
 
@@ -166,6 +186,20 @@ namespace OffWithTheirNuts {
             }
         }
 
+        private void DrawCleanup(ConfigEntryBase entry) {
+            bool guiEnabled = GUI.enabled;
+            try {
+                GUI.enabled = guiEnabled && instance == this && IsCleanupAvailable(serverSync.CurrentNetwork);
+                if (!GUILayout.Button(uiLanguage.TextResources.CleanupButton)) {
+                    return;
+                }
+
+                ClearWorldModData();
+            } finally {
+                GUI.enabled = guiEnabled;
+            }
+        }
+
         private void OnEnabledChanged(object sender, EventArgs args) {
             serverSync?.RefreshEnabledSetting();
         }
@@ -187,6 +221,7 @@ namespace OffWithTheirNuts {
         public string Description;
         public Action<ConfigEntryBase> CustomDrawer;
         public bool? HideDefaultButton;
+        public int? Order;
 
         internal void SetText(string category, string name, string description) {
             Category = category;

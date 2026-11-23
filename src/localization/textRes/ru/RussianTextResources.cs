@@ -15,7 +15,7 @@ namespace OffWithTheirNuts {
         internal override string EnabledName =>
             "Включить мод";
         internal override string EnabledDescription =>
-            "Применять сохранённые запреты. В мультиплеере эту настройку задаёт сервер.";
+            "Применять сохранённые статусы стерилизации. В мультиплеере эту настройку задаёт сервер.";
         internal override string Enabled =>
             "Включено";
         internal override string Disabled =>
@@ -29,11 +29,25 @@ namespace OffWithTheirNuts {
         internal override string SterilizationEffectsDescription =>
             "Воспроизводить звук и визуальные эффекты при стерилизации животного или её отмене.";
         internal override string ResetName =>
-            "Сброс запретов";
+            "Сброс стерилизации";
         internal override string ResetDescription =>
-            "Снять запреты со всех отмеченных животных текущего мира.";
+            "Снять статус стерилизации со всех отмеченных животных текущего мира.";
         internal override string ResetButton =>
-            "Сбросить все запреты";
+            "Сбросить всю стерилизацию";
+        internal override string CleanupName =>
+            "Удалить данные мода";
+        internal override string CleanupDescription =>
+            "Удалить все данные мода из сохранения текущего мира. " +
+            "Запускай очистку без подключённых игроков. " +
+            "Проследи, чтобы никто не подключался до окончания очистки - мод не блокирует подключения. " +
+            "Для завершения сохрани и перезагрузи мир. " +
+            "После этого мод можно удалить.";
+        internal override string CleanupButton =>
+            "Удалить данные мода из мира";
+        internal override string CleanupPlayersConnected =>
+            "Для очистки нужно, чтобы все остальные игроки отключились";
+        internal override string CleanupCompleted =>
+            "Данные мода удалены. Сохрани мир, чтобы записать изменения";
         internal override string ChangePending =>
             "Изменение уже выполняется. Повтори после завершения.";
         internal override string TargetUnavailable =>

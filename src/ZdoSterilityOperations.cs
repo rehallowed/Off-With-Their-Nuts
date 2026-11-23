@@ -10,6 +10,10 @@ namespace OffWithTheirNuts {
             );
         }
 
+        internal static bool TryRemoveSterility(ZDO zdo) {
+            return zdo.RemoveBool(SterileKey);
+        }
+
         internal static void ClearPregnancy(ZDO zdo) {
             long pregnancy = zdo.GetLong(
                 hash: ZDOVars.s_pregnant,

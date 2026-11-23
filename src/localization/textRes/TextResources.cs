@@ -42,6 +42,11 @@ namespace OffWithTheirNuts {
         internal abstract string ResetName { get; }
         internal abstract string ResetDescription { get; }
         internal abstract string ResetButton { get; }
+        internal abstract string CleanupName { get; }
+        internal abstract string CleanupDescription { get; }
+        internal abstract string CleanupButton { get; }
+        internal abstract string CleanupPlayersConnected { get; }
+        internal abstract string CleanupCompleted { get; }
         internal abstract string ChangePending { get; }
         internal abstract string TargetUnavailable { get; }
         internal abstract string AlreadySterile { get; }

@@ -29,11 +29,25 @@ namespace OffWithTheirNuts {
         internal override string SterilizationEffectsDescription =>
             "Play sounds and visual effects when an animal is sterilized or its fertility is restored.";
         internal override string ResetName =>
-            "Reset breeding restrictions";
+            "Reset all breeding restrictions";
         internal override string ResetDescription =>
             "Restore fertility to all sterile animals in the current world.";
         internal override string ResetButton =>
-            "Reset all restrictions";
+            "Reset all breeding restrictions";
+        internal override string CleanupName =>
+            "Mod data cleanup";
+        internal override string CleanupDescription =>
+            "Remove all mod data from the current world's save. " +
+            "Start the cleanup with no other players connected. " +
+            "Make sure no one joins until cleanup is complete - the mod does not block connections. " +
+            "To finish, save and reload the world. " +
+            "You can then uninstall the mod.";
+        internal override string CleanupButton =>
+            "Remove mod data from world";
+        internal override string CleanupPlayersConnected =>
+            "Cleanup requires all other players to disconnect";
+        internal override string CleanupCompleted =>
+            "Mod data removed. Save the world to keep the changes";
         internal override string ChangePending =>
             "A change is already in progress. Try again when it finishes.";
         internal override string TargetUnavailable =>
