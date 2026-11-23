@@ -47,7 +47,7 @@ Extract the archive and move the "OffWithTheirNuts" folder into your plugins fol
 
 In multiplayer, the server and every player need the mod installed.
 
-[Download version 0.2.0-beta](https://github.com/rehallowed/Off-With-Their-Nuts/releases/download/v0.2.0-beta/OffWithTheirNuts.zip)
+[Download version 0.2.0-beta](https://github.com/rehallowed/Off-With-Their-Nuts/releases/download/v0.2.0-beta/OffWithTheirNuts_v0.2.0-beta.zip)
 
 The mod requires BepInEx and Jötunn. Valheim Configuration Manager is optional.
 
@@ -109,7 +109,7 @@ The mod requires BepInEx and Jötunn. Valheim Configuration Manager is optional.
 
 Для многопользовательской игры мод надо ставить и на сервер, и каждому игроку.
 
-[Скачать версию 0.2.0-beta](https://github.com/rehallowed/Off-With-Their-Nuts/releases/download/v0.2.0-beta/OffWithTheirNuts.zip)
+[Скачать версию 0.2.0-beta](https://github.com/rehallowed/Off-With-Their-Nuts/releases/download/v0.2.0-beta/OffWithTheirNuts_v0.2.0-beta.zip)
 
 Для работы мода требуются BepInEx, Jötunn и опционально Valheim Configuration Manager.
 
