@@ -5,9 +5,9 @@ namespace OffWithTheirNuts {
         internal override string SterileStatus =>
             "Стерилизован";
         internal override string BreedingCategory =>
-            "01. Размножение";
+            "Размножение";
         internal override string WorldManagementCategory =>
-            "02. Управление миром";
+            "Управление миром";
         internal override string EnabledName =>
             "Включить мод";
         internal override string EnabledDescription =>
