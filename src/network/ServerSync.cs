@@ -168,7 +168,7 @@ namespace OffWithTheirNuts {
                             break;
                         }
                         case NetworkCommand.OwnerWrites when SettingsReady: {
-                            SterilityWrites.ApplyOwnerWrites(
+                            NetworkSterilityWrites.ApplyOwnerWrites(
                                 network: network,
                                 packet: package
                             );

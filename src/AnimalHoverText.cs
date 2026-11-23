@@ -39,7 +39,8 @@ namespace OffWithTheirNuts {
         private static class HoverTextPatch {
             private static void Postfix(ref string __result, ZNetView ___m_nview) {
                 OffWithTheirNutsPlugin mod = instance;
-                if (mod != null && mod.RestrictionsActive && !string.IsNullOrEmpty(__result) && IsSterile(___m_nview?.GetZDO())) {
+                if (mod != null && mod.RestrictionsActive && !string.IsNullOrEmpty(__result) &&
+                    ZdoSterilityOperations.IsSterile(___m_nview?.GetZDO())) {
                     __result = mod.animalHoverText.WithSterileStatus(
                         hoverText: __result,
                         textResources: mod.uiLanguage.TextResources

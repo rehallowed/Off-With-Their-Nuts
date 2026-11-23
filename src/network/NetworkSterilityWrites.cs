@@ -5,7 +5,7 @@ using UnityEngine;
 using static OffWithTheirNuts.NetworkConfig;
 
 namespace OffWithTheirNuts {
-    internal static class SterilityWrites {
+    internal static class NetworkSterilityWrites {
         internal struct TargetWrite {
             internal readonly ZDOID Id;
             internal long LastOwner;
@@ -78,7 +78,7 @@ namespace OffWithTheirNuts {
                     continue;
                 }
 
-                bool stateMatches = OffWithTheirNutsPlugin.IsSterile(zdo) == requestedState;
+                bool stateMatches = ZdoSterilityOperations.IsSterile(zdo) == requestedState;
                 if (!stateMatches && !zdo.IsOwner() && zdo.HasOwner()) {
                     if (TryQueueOwnerWrite(
                         network: network,
@@ -93,7 +93,7 @@ namespace OffWithTheirNuts {
                 }
 
                 if (!stateMatches) {
-                    OffWithTheirNutsPlugin.SetSterility(
+                    ZdoSterilityOperations.SetSterility(
                         zdo: zdo,
                         requestedState: requestedState
                     );
@@ -208,7 +208,7 @@ namespace OffWithTheirNuts {
                     continue;
                 }
 
-                OffWithTheirNutsPlugin.SetSterility(
+                ZdoSterilityOperations.SetSterility(
                     zdo: zdo,
                     requestedState: requestedState
                 );

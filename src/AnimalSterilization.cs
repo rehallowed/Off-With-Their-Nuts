@@ -2,7 +2,6 @@ using System.Collections;
 using System.Collections.Generic;
 using HarmonyLib;
 using UnityEngine;
-using static OffWithTheirNuts.Constants;
 
 namespace OffWithTheirNuts {
     public sealed partial class OffWithTheirNutsPlugin {
@@ -17,7 +16,7 @@ namespace OffWithTheirNuts {
             ZDO zdo = view.GetZDO();
             serverSync.RequestChange(
                 id: zdo.m_uid,
-                requested: !IsSterile(zdo)
+                requested: !ZdoSterilityOperations.IsSterile(zdo)
             );
         }
 
@@ -44,7 +43,7 @@ namespace OffWithTheirNuts {
                 );
                 return;
             }
-            if (IsSterile(target) == requestedState) {
+            if (ZdoSterilityOperations.IsSterile(target) == requestedState) {
                 serverSync.Notify(
                     peer: requester,
                     kind: requestedState ? PlayerNoticeKind.AlreadySterile : PlayerNoticeKind.AlreadyFertile
@@ -63,11 +62,11 @@ namespace OffWithTheirNuts {
         }
 
         private IEnumerator ChangeAnimal(ZNetPeer requester, ZDOID id, bool requestedState) {
-            var result = new SterilityWrites.ChangeResult();
+            var result = new NetworkSterilityWrites.ChangeResult();
             try {
-                yield return SterilityWrites.ApplyChanges(
+                yield return NetworkSterilityWrites.ApplyChanges(
                     network: serverSync.CurrentNetwork,
-                    remaining: new List<SterilityWrites.TargetWrite>(1) { new SterilityWrites.TargetWrite(id) },
+                    remaining: new List<NetworkSterilityWrites.TargetWrite>(1) { new NetworkSterilityWrites.TargetWrite(id) },
                     requestedState: requestedState,
                     result: result
                 );
@@ -152,48 +151,6 @@ namespace OffWithTheirNuts {
             return (playerPosition - target.GetPosition()).sqrMagnitude <= distance * distance;
         }
 
-        internal static bool IsSterile(ZDO zdo) {
-            return zdo != null && zdo.GetBool(
-                hash: SterileKey,
-                defaultValue: false
-            );
-        }
-
-        private static void ClearPregnancy(ZDO zdo) {
-            if (zdo.GetLong(
-                hash: ZDOVars.s_pregnant,
-                defaultValue: 0L
-            ) != 0L) {
-                zdo.Set(
-                    hash: ZDOVars.s_pregnant,
-                    value: 0L
-                );
-            }
-            if (zdo.GetInt(
-                hash: ZDOVars.s_lovePoints,
-                defaultValue: 0
-            ) != 0) {
-                zdo.Set(
-                    hash: ZDOVars.s_lovePoints,
-                    value: 0
-                );
-            }
-        }
-
-        internal static void SetSterility(ZDO zdo, bool requestedState) {
-            if (IsSterile(zdo) == requestedState) {
-                return;
-            }
-
-            if (requestedState) {
-                ClearPregnancy(zdo);
-            }
-            zdo.Set(
-                hash: SterileKey,
-                value: requestedState
-            );
-        }
-
         [HarmonyPatch(
             declaringType: typeof(Procreation),
             methodName: "Procreate"
@@ -212,12 +169,12 @@ namespace OffWithTheirNuts {
                 }
 
                 ZDO zdo = ___m_nview?.GetZDO();
-                if (!IsSterile(zdo)) {
+                if (!ZdoSterilityOperations.IsSterile(zdo)) {
                     return true;
                 }
 
                 if (zdo.IsOwner()) {
-                    ClearPregnancy(zdo);
+                    ZdoSterilityOperations.ClearPregnancy(zdo);
                 }
                 return false;
             }
@@ -233,7 +190,8 @@ namespace OffWithTheirNuts {
                 if (sync == null || !sync.HasWorld) {
                     return true;
                 }
-                if (sync.SettingsReady && (!sync.RestrictionsEnabled || !IsSterile(___m_nview?.GetZDO()))) {
+                if (sync.SettingsReady &&
+                    (!sync.RestrictionsEnabled || !ZdoSterilityOperations.IsSterile(___m_nview?.GetZDO()))) {
                     return true;
                 }
 

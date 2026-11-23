@@ -46,18 +46,18 @@ namespace OffWithTheirNuts {
                 }
 
                 var scan = Stopwatch.StartNew();
-                var marked = new List<SterilityWrites.TargetWrite>();
+                var marked = new List<NetworkSterilityWrites.TargetWrite>();
                 int scanned = 0;
                 foreach (ZDO zdo in worldObjects(ZDOMan.instance).Values) {
                     scanned++;
-                    if (IsSterile(zdo)) {
-                        marked.Add(new SterilityWrites.TargetWrite(zdo.m_uid));
+                    if (ZdoSterilityOperations.IsSterile(zdo)) {
+                        marked.Add(new NetworkSterilityWrites.TargetWrite(zdo.m_uid));
                     }
                 }
                 scan.Stop();
 
-                var result = new SterilityWrites.ChangeResult();
-                yield return SterilityWrites.ApplyChanges(
+                var result = new NetworkSterilityWrites.ChangeResult();
+                yield return NetworkSterilityWrites.ApplyChanges(
                     network: serverSync.CurrentNetwork,
                     remaining: marked,
                     requestedState: false,
