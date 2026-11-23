@@ -1,7 +1,8 @@
 namespace OffWithTheirNuts {
     internal static class ZdoSterilityOperations {
-        // Keep the original Valheim stable hash so existing worlds retain their flags.
-        private const int SterileKey = 516296702;
+        // Keep this prefix stable. Changing it requires migrating existing ZDO fields.
+        private const string ZdoKeyPrefix = "OffWithTheirNuts";
+        private static readonly int SterileKey = (ZdoKeyPrefix + ".sterile").GetStableHashCode();
 
         internal static bool IsSterile(ZDO zdo) {
             return zdo != null && zdo.GetBool(
