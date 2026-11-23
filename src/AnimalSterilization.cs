@@ -10,7 +10,7 @@ namespace OffWithTheirNuts {
 
         private void ToggleTarget(Character target) {
             ZNetView view = target.GetComponent<ZNetView>();
-            if (view == null || !view.IsValid() || !CanSterilize(target.gameObject)) {
+            if (view == null || !view.IsValid() || !IsSterilizable(target.gameObject)) {
                 return;
             }
 
@@ -34,7 +34,7 @@ namespace OffWithTheirNuts {
             }
 
             ZDO target = ZDOMan.instance?.GetZDO(id);
-            if (target == null || !ServerSync.CanChangeTarget(
+            if (target == null || !IsSterilityChangeAllowed(
                 requester: requester,
                 target: target
             )) {
@@ -63,10 +63,11 @@ namespace OffWithTheirNuts {
         }
 
         private IEnumerator ChangeAnimal(ZNetPeer requester, ZDOID id, bool requestedState) {
-            var result = new ServerSync.ChangeResult();
+            var result = new SterilityWrites.ChangeResult();
             try {
-                yield return serverSync.ApplyChanges(
-                    remaining: new List<ServerSync.TargetWrite>(1) { new ServerSync.TargetWrite(id) },
+                yield return SterilityWrites.ApplyChanges(
+                    network: serverSync.CurrentNetwork,
+                    remaining: new List<SterilityWrites.TargetWrite>(1) { new SterilityWrites.TargetWrite(id) },
                     requestedState: requestedState,
                     result: result
                 );
@@ -84,10 +85,71 @@ namespace OffWithTheirNuts {
             }
         }
 
-        internal static bool CanSterilize(GameObject target) {
+        internal static bool IsSterilizable(GameObject target) {
             Tameable tameable = target.GetComponent<Tameable>();
             return tameable != null && tameable.IsTamed() &&
                 target.GetComponent<Procreation>() != null && target.GetComponent<Growup>() == null;
+        }
+
+        private static bool IsSterilityChangeAllowed(ZNetPeer requester, ZDO target) {
+            GameObject targetObject = ZNetScene.instance?.FindInstance(target.m_uid);
+            if (requester == null) {
+                Player local = Player.m_localPlayer;
+                Character hovered = local != null ? local.GetHoverCreature() : null;
+                return hovered != null && hovered.gameObject == targetObject && IsSterilizable(targetObject);
+            }
+
+            ZDO player = ServerSync.GetRequestingPlayer(requester);
+            if (player == null) {
+                return false;
+            }
+
+            ZNetScene scene = ZNetScene.instance;
+            if (scene == null) {
+                return false;
+            }
+            GameObject playerPrefab = scene.GetPrefab(player.GetPrefab());
+            Player playerTemplate = playerPrefab != null ? playerPrefab.GetComponent<Player>() : null;
+            if (playerTemplate == null) {
+                return false;
+            }
+            GameObject targetPrefab = scene.GetPrefab(target.GetPrefab());
+            Character targetTemplate = targetPrefab != null ? targetPrefab.GetComponent<Character>() : null;
+            if (targetTemplate == null) {
+                return false;
+            }
+
+            if (targetObject != null) {
+                if (!IsSterilizable(targetObject)) {
+                    return false;
+                }
+            } else if (!target.GetBool(
+                hash: ZDOVars.s_tamed,
+                defaultValue: false
+            ) || targetPrefab.GetComponent<Tameable>() == null ||
+                targetPrefab.GetComponent<Procreation>() == null || targetPrefab.GetComponent<Growup>() != null) {
+                return false;
+            }
+
+            float distance = playerTemplate.m_maxInteractDistance + Mathf.Max(
+                a: 0f,
+                b: targetTemplate.GetHoverOffset()
+            );
+            Vector3 playerPosition = player.GetPosition();
+            CapsuleCollider collider = targetObject != null ? targetObject.GetComponent<CapsuleCollider>() : null;
+            if (collider != null && collider.enabled) {
+                return (playerPosition - collider.ClosestPoint(playerPosition)).sqrMagnitude <= distance * distance;
+            }
+
+            CapsuleCollider prefabCollider = targetPrefab.GetComponent<CapsuleCollider>();
+            if (prefabCollider != null) {
+                Vector3 scale = targetPrefab.transform.localScale;
+                distance += prefabCollider.radius * Mathf.Max(
+                    a: Mathf.Abs(scale.x),
+                    b: Mathf.Abs(scale.z)
+                );
+            }
+            return (playerPosition - target.GetPosition()).sqrMagnitude <= distance * distance;
         }
 
         internal static bool IsSterile(ZDO zdo) {
@@ -118,7 +180,7 @@ namespace OffWithTheirNuts {
             }
         }
 
-        private static void SetSterility(ZDO zdo, bool requestedState) {
+        internal static void SetSterility(ZDO zdo, bool requestedState) {
             if (IsSterile(zdo) == requestedState) {
                 return;
             }

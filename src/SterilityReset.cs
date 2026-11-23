@@ -10,7 +10,7 @@ namespace OffWithTheirNuts {
         private bool resetting;
 
         private void StartReset(ZNetPeer requester) {
-            if (!serverSync.CanAdminister(requester) || ZDOMan.instance == null) {
+            if (!serverSync.IsWorldAdmin(requester) || ZDOMan.instance == null) {
                 return;
             }
             if (resetting) {
@@ -46,18 +46,19 @@ namespace OffWithTheirNuts {
                 }
 
                 var scan = Stopwatch.StartNew();
-                var marked = new List<ServerSync.TargetWrite>();
+                var marked = new List<SterilityWrites.TargetWrite>();
                 int scanned = 0;
                 foreach (ZDO zdo in worldObjects(ZDOMan.instance).Values) {
                     scanned++;
                     if (IsSterile(zdo)) {
-                        marked.Add(new ServerSync.TargetWrite(zdo.m_uid));
+                        marked.Add(new SterilityWrites.TargetWrite(zdo.m_uid));
                     }
                 }
                 scan.Stop();
 
-                var result = new ServerSync.ChangeResult();
-                yield return serverSync.ApplyChanges(
+                var result = new SterilityWrites.ChangeResult();
+                yield return SterilityWrites.ApplyChanges(
+                    network: serverSync.CurrentNetwork,
                     remaining: marked,
                     requestedState: false,
                     result: result

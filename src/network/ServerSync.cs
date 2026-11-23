@@ -1,10 +1,7 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.IO;
 using BepInEx.Configuration;
 using HarmonyLib;
-using UnityEngine;
 using static OffWithTheirNuts.NetworkConfig;
 
 namespace OffWithTheirNuts {
@@ -14,12 +11,12 @@ namespace OffWithTheirNuts {
         private readonly Action onWorldClosed;
         private readonly Action<ZNetPeer, ZDOID, bool> startChange;
         private readonly Action<ZNetPeer> startReset;
-        private readonly Action<ZDO, bool> setSterility;
         private readonly Action<PlayerNotice> showNotice;
         private readonly Action<ZDOID> playSterilizationEffect;
         private ZNet network;
         private bool canManageWorld;
 
+        internal ZNet CurrentNetwork => network;
         internal bool HasWorld => !(network is null);
         internal bool SettingsReady {
             get;
@@ -40,7 +37,6 @@ namespace OffWithTheirNuts {
             Action onWorldClosed,
             Action<ZNetPeer, ZDOID, bool> startChange,
             Action<ZNetPeer> startReset,
-            Action<ZDO, bool> setSterility,
             Action<PlayerNotice> showNotice,
             Action<ZDOID> playSterilizationEffect
         ) {
@@ -49,37 +45,8 @@ namespace OffWithTheirNuts {
             this.onWorldClosed = onWorldClosed;
             this.startChange = startChange;
             this.startReset = startReset;
-            this.setSterility = setSterility;
             this.showNotice = showNotice;
             this.playSterilizationEffect = playSterilizationEffect;
-        }
-
-        private enum Command : byte {
-            AskSettings = 1,
-            Settings = 2,
-            SetEnabled = 3,
-            Toggle = 4,
-            ResetAll = 5,
-            OwnerWrites = 6,
-            LocalizedNotice = 7,
-            SterilizationEffect = 8
-        }
-
-        internal struct TargetWrite {
-            internal readonly ZDOID Id;
-            internal long LastOwner;
-            internal ushort LastRevision;
-            internal double ResendAt;
-
-            internal TargetWrite(ZDOID id) {
-                this = default;
-                Id = id;
-            }
-        }
-
-        internal sealed class ChangeResult {
-            internal int Changed;
-            internal int Unconfirmed;
         }
 
         private void OpenWorld(ZNet current) {
@@ -103,7 +70,7 @@ namespace OffWithTheirNuts {
                 enabledSetting.Value = requested;
             } else {
                 SendToServer(
-                    command: Command.SetEnabled,
+                    command: NetworkCommand.SetEnabled,
                     fill: package => package.Write(requested)
                 );
             }
@@ -126,7 +93,7 @@ namespace OffWithTheirNuts {
                 );
             } else {
                 SendToServer(
-                    command: Command.Toggle,
+                    command: NetworkCommand.Toggle,
                     fill: package => {
                         package.Write(id);
                         package.Write(requested);
@@ -139,7 +106,7 @@ namespace OffWithTheirNuts {
             if (network.IsServer()) {
                 startReset(null);
             } else {
-                SendToServer(Command.ResetAll);
+                SendToServer(NetworkCommand.ResetAll);
             }
         }
 
@@ -163,19 +130,19 @@ namespace OffWithTheirNuts {
             }
 
             try {
-                Command command = (Command)package.ReadByte();
+                NetworkCommand command = (NetworkCommand)package.ReadByte();
                 int remaining = package.Size() - package.GetPos();
                 if (network.IsServer()) {
                     switch (command) {
-                        case Command.AskSettings when remaining == 0: {
+                        case NetworkCommand.AskSettings when remaining == 0: {
                             SendSettings(peer);
                             break;
                         }
-                        case Command.SetEnabled when remaining == 1 && CanAdminister(peer): {
+                        case NetworkCommand.SetEnabled when remaining == 1 && IsWorldAdmin(peer): {
                             enabledSetting.Value = package.ReadBool();
                             break;
                         }
-                        case Command.Toggle when remaining == TargetWireSize + 1: {
+                        case NetworkCommand.Toggle when remaining == TargetWireSize + 1: {
                             startChange(
                                 arg1: peer,
                                 arg2: package.ReadZDOID(),
@@ -183,7 +150,7 @@ namespace OffWithTheirNuts {
                             );
                             break;
                         }
-                        case Command.ResetAll when remaining == 0 && CanAdminister(peer): {
+                        case NetworkCommand.ResetAll when remaining == 0 && IsWorldAdmin(peer): {
                             startReset(peer);
                             break;
                         }
@@ -193,18 +160,21 @@ namespace OffWithTheirNuts {
                     objB: peer
                 )) {
                     switch (command) {
-                        case Command.Settings when remaining == 2: {
+                        case NetworkCommand.Settings when remaining == 2: {
                             RestrictionsEnabled = package.ReadBool();
                             canManageWorld = package.ReadBool();
                             SettingsReady = true;
                             refreshHotkey();
                             break;
                         }
-                        case Command.OwnerWrites when SettingsReady: {
-                            ApplyOwnerWrites(package);
+                        case NetworkCommand.OwnerWrites when SettingsReady: {
+                            SterilityWrites.ApplyOwnerWrites(
+                                network: network,
+                                packet: package
+                            );
                             break;
                         }
-                        case Command.LocalizedNotice: {
+                        case NetworkCommand.LocalizedNotice: {
                             if (PlayerNotice.TryRead(
                                 package: package,
                                 remaining: remaining,
@@ -214,7 +184,7 @@ namespace OffWithTheirNuts {
                             }
                             break;
                         }
-                        case Command.SterilizationEffect when remaining == TargetWireSize: {
+                        case NetworkCommand.SterilizationEffect when remaining == TargetWireSize: {
                             playSterilizationEffect(package.ReadZDOID());
                             break;
                         }
@@ -225,7 +195,7 @@ namespace OffWithTheirNuts {
             }
         }
 
-        private void SendToServer(Command command, Action<ZPackage> fill = null) {
+        private void SendToServer(NetworkCommand command, Action<ZPackage> fill = null) {
             ZNetPeer server = network?.GetServerPeer();
             if (server != null && server.IsReady()) {
                 Send(
@@ -236,7 +206,7 @@ namespace OffWithTheirNuts {
             }
         }
 
-        private static void Send(ZNetPeer peer, Command command, Action<ZPackage> fill = null) {
+        private static void Send(ZNetPeer peer, NetworkCommand command, Action<ZPackage> fill = null) {
             var payload = new ZPackage();
             payload.Write((byte)command);
             fill?.Invoke(payload);
@@ -246,7 +216,7 @@ namespace OffWithTheirNuts {
             );
         }
 
-        internal bool CanAdminister(ZNetPeer peer) {
+        internal bool IsWorldAdmin(ZNetPeer peer) {
             return network != null && network.IsServer() &&
                 (peer == null || network.IsAdmin(peer.m_socket.GetHostName()));
         }
@@ -262,212 +232,17 @@ namespace OffWithTheirNuts {
         private void SendSettings(ZNetPeer peer) {
             Send(
                 peer: peer,
-                command: Command.Settings,
+                command: NetworkCommand.Settings,
                 fill: package => {
                     package.Write(RestrictionsEnabled);
-                    package.Write(CanAdminister(peer));
+                    package.Write(IsWorldAdmin(peer));
                 }
             );
         }
 
-        internal static bool CanChangeTarget(ZNetPeer requester, ZDO target) {
-            GameObject targetObject = ZNetScene.instance?.FindInstance(target.m_uid);
-            if (requester == null) {
-                Player local = Player.m_localPlayer;
-                Character hovered = local != null ? local.GetHoverCreature() : null;
-                return hovered != null && hovered.gameObject == targetObject && OffWithTheirNutsPlugin.CanSterilize(targetObject);
-            }
-
+        internal static ZDO GetRequestingPlayer(ZNetPeer requester) {
             ZDO player = ZDOMan.instance.GetZDO(requester.m_characterID);
-            if (player == null || player.GetOwner() != requester.m_uid) {
-                return false;
-            }
-
-            ZNetScene scene = ZNetScene.instance;
-            if (scene == null) {
-                return false;
-            }
-            GameObject playerPrefab = scene.GetPrefab(player.GetPrefab());
-            Player playerTemplate = playerPrefab != null ? playerPrefab.GetComponent<Player>() : null;
-            if (playerTemplate == null) {
-                return false;
-            }
-            GameObject targetPrefab = scene.GetPrefab(target.GetPrefab());
-            Character targetTemplate = targetPrefab != null ? targetPrefab.GetComponent<Character>() : null;
-            if (targetTemplate == null) {
-                return false;
-            }
-
-            if (targetObject != null) {
-                if (!OffWithTheirNutsPlugin.CanSterilize(targetObject)) {
-                    return false;
-                }
-            } else if (!target.GetBool(
-                hash: ZDOVars.s_tamed,
-                defaultValue: false
-            ) || targetPrefab.GetComponent<Tameable>() == null ||
-                targetPrefab.GetComponent<Procreation>() == null || targetPrefab.GetComponent<Growup>() != null) {
-                return false;
-            }
-
-            float distance = playerTemplate.m_maxInteractDistance + Mathf.Max(
-                a: 0f,
-                b: targetTemplate.GetHoverOffset()
-            );
-            Vector3 playerPosition = player.GetPosition();
-            CapsuleCollider collider = targetObject != null ? targetObject.GetComponent<CapsuleCollider>() : null;
-            if (collider != null && collider.enabled) {
-                return (playerPosition - collider.ClosestPoint(playerPosition)).sqrMagnitude <= distance * distance;
-            }
-
-            CapsuleCollider prefabCollider = targetPrefab.GetComponent<CapsuleCollider>();
-            if (prefabCollider != null) {
-                Vector3 scale = targetPrefab.transform.localScale;
-                distance += prefabCollider.radius * Mathf.Max(
-                    a: Mathf.Abs(scale.x),
-                    b: Mathf.Abs(scale.z)
-                );
-            }
-            return (playerPosition - target.GetPosition()).sqrMagnitude <= distance * distance;
-        }
-
-        internal IEnumerator ApplyChanges(
-            List<TargetWrite> remaining,
-            bool requestedState,
-            ChangeResult result
-        ) {
-            if (remaining.Count == 0) {
-                yield break;
-            }
-
-            double timeoutAt = Time.realtimeSinceStartupAsDouble + ChangeTimeout;
-            double expiresAt = network.GetTimeSeconds() + ChangeTimeout;
-            var wait = new WaitForSecondsRealtime(0.10f);
-            var byOwner = new Dictionary<ZNetPeer, List<TargetWrite>>();
-            while (remaining.Count > 0) {
-                double now = Time.realtimeSinceStartupAsDouble;
-                for (int i = remaining.Count - 1; i >= 0; i--) {
-                    TargetWrite write = remaining[i];
-                    ZDO zdo = ZDOMan.instance.GetZDO(write.Id);
-                    if (zdo == null) {
-                        result.Unconfirmed++;
-                        remaining.RemoveAt(i);
-                    } else if (OffWithTheirNutsPlugin.IsSterile(zdo) == requestedState) {
-                        result.Changed++;
-                        remaining.RemoveAt(i);
-                    } else if (zdo.IsOwner() || !zdo.HasOwner()) {
-                        setSterility(
-                            arg1: zdo,
-                            arg2: requestedState
-                        );
-                        result.Changed++;
-                        remaining.RemoveAt(i);
-                    } else {
-                        long owner = zdo.GetOwner();
-                        ushort revision = zdo.OwnerRevision;
-                        if (write.LastOwner == owner && write.LastRevision == revision && now < write.ResendAt) {
-                            continue;
-                        }
-
-                        ZNetPeer peer = network.GetPeer(owner);
-                        if (peer == null || !peer.IsReady()) {
-                            continue;
-                        }
-
-                        write.LastOwner = owner;
-                        write.LastRevision = revision;
-                        write.ResendAt = now + ResendInterval;
-                        remaining[i] = write;
-                        if (!byOwner.TryGetValue(
-                            key: peer,
-                            value: out List<TargetWrite> queued
-                        )) {
-                            queued = new List<TargetWrite>();
-                            byOwner.Add(
-                                key: peer,
-                                value: queued
-                            );
-                        }
-                        queued.Add(write);
-                    }
-                }
-
-                foreach (KeyValuePair<ZNetPeer, List<TargetWrite>> batch in byOwner) {
-                    if (batch.Value.Count != 0) {
-                        SendOwnerWrites(
-                            peer: batch.Key,
-                            writes: batch.Value,
-                            requestedState: requestedState,
-                            expiresAt: expiresAt
-                        );
-                        batch.Value.Clear();
-                    }
-                }
-
-                if (remaining.Count == 0 || now >= timeoutAt) {
-                    break;
-                }
-                yield return wait;
-            }
-            result.Unconfirmed += remaining.Count;
-        }
-
-        private static void SendOwnerWrites(
-            ZNetPeer peer,
-            List<TargetWrite> writes,
-            bool requestedState,
-            double expiresAt
-        ) {
-            for (int start = 0; start < writes.Count; start += MaxBatch) {
-                int count = Math.Min(
-                    val1: MaxBatch,
-                    val2: writes.Count - start
-                );
-                var packet = new ZPackage();
-                packet.Write((byte)Command.OwnerWrites);
-                packet.Write(requestedState);
-                packet.Write(expiresAt);
-                packet.Write(count);
-                for (int i = start; i < start + count; i++) {
-                    packet.Write(writes[i].Id);
-                    packet.Write(writes[i].LastRevision);
-                }
-                peer.m_rpc.Invoke(
-                    method: RpcName,
-                    parameters: packet
-                );
-            }
-        }
-
-        private void ApplyOwnerWrites(ZPackage packet) {
-            const int HeaderSize = sizeof(bool) + sizeof(double) + sizeof(int);
-            if (packet.Size() - packet.GetPos() < HeaderSize) {
-                return;
-            }
-
-            bool requestedState = packet.ReadBool();
-            double expiresAt = packet.ReadDouble();
-            int count = packet.ReadInt();
-            if (count < 1 || count > MaxBatch || ZDOMan.instance == null ||
-                network.GetTimeSeconds() > expiresAt ||
-                packet.Size() - packet.GetPos() != count * (TargetWireSize + sizeof(ushort))) {
-                return;
-            }
-
-            for (int i = 0; i < count; i++) {
-                ZDOID id = packet.ReadZDOID();
-                ushort expectedRevision = packet.ReadUShort();
-                ZDO zdo = ZDOMan.instance.GetZDO(id);
-                if (zdo == null || !zdo.IsOwner() || zdo.OwnerRevision != expectedRevision) {
-                    continue;
-                }
-
-                setSterility(
-                    arg1: zdo,
-                    arg2: requestedState
-                );
-                ZDOMan.instance.ForceSendZDO(id);
-            }
+            return player != null && player.GetOwner() == requester.m_uid ? player : null;
         }
 
         internal void PublishSterilizationEffect(ZDOID id) {
@@ -479,7 +254,7 @@ namespace OffWithTheirNuts {
                 if (peer.IsReady()) {
                     Send(
                         peer: peer,
-                        command: Command.SterilizationEffect,
+                        command: NetworkCommand.SterilizationEffect,
                         fill: package => package.Write(id)
                     );
                 }
@@ -500,7 +275,7 @@ namespace OffWithTheirNuts {
             } else if (peer.IsReady()) {
                 Send(
                     peer: peer,
-                    command: Command.LocalizedNotice,
+                    command: NetworkCommand.LocalizedNotice,
                     fill: notice.Write
                 );
             }
@@ -568,7 +343,7 @@ namespace OffWithTheirNuts {
                 )) {
                     Send(
                         peer: server,
-                        command: Command.AskSettings
+                        command: NetworkCommand.AskSettings
                     );
                 }
             }

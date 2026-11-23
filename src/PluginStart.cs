@@ -12,6 +12,7 @@ using static OffWithTheirNuts.Constants;
 [assembly: AssemblyInformationalVersion(PluginVersion)]
 
 namespace OffWithTheirNuts {
+    
     [BepInPlugin(
         GUID: PluginId,
         Name: PluginName,
@@ -55,7 +56,6 @@ namespace OffWithTheirNuts {
                     onWorldClosed: OnWorldClosed,
                     startChange: StartChange,
                     startReset: StartReset,
-                    setSterility: SetSterility,
                     showNotice: notice => notice.Show(uiLanguage.TextResources),
                     playSterilizationEffect: effects.PlayIfEnabled
                 );
