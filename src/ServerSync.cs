@@ -15,6 +15,7 @@ namespace OffWithTheirNuts {
         private readonly Action<ZNetPeer, ZDOID, bool> startChange;
         private readonly Action<ZNetPeer> startReset;
         private readonly Action<ZDO, bool, bool> setSterility;
+        private readonly Action<PlayerNotice> showNotice;
         private ZNet network;
         private bool canManageWorld;
 
@@ -38,7 +39,8 @@ namespace OffWithTheirNuts {
             Action onWorldClosed,
             Action<ZNetPeer, ZDOID, bool> startChange,
             Action<ZNetPeer> startReset,
-            Action<ZDO, bool, bool> setSterility
+            Action<ZDO, bool, bool> setSterility,
+            Action<PlayerNotice> showNotice
         ) {
             this.enabledSetting = enabledSetting;
             this.refreshHotkey = refreshHotkey;
@@ -46,6 +48,7 @@ namespace OffWithTheirNuts {
             this.startChange = startChange;
             this.startReset = startReset;
             this.setSterility = setSterility;
+            this.showNotice = showNotice;
         }
 
         private enum Command : byte {
@@ -55,7 +58,7 @@ namespace OffWithTheirNuts {
             Toggle = 4,
             ResetAll = 5,
             OwnerWrites = 6,
-            Notice = 7
+            LocalizedNotice = 7
         }
 
         internal struct TargetWrite {
@@ -197,8 +200,14 @@ namespace OffWithTheirNuts {
                             ApplyOwnerWrites(package);
                             break;
                         }
-                        case Command.Notice when remaining > 0: {
-                            ShowNotice(package.ReadString());
+                        case Command.LocalizedNotice: {
+                            if (PlayerNotice.TryRead(
+                                package: package,
+                                remaining: remaining,
+                                notice: out PlayerNotice notice
+                            )) {
+                                showNotice(notice);
+                            }
                             break;
                         }
                     }
@@ -428,8 +437,8 @@ namespace OffWithTheirNuts {
         }
 
         private void ApplyOwnerWrites(ZPackage packet) {
-            const int headerSize = 2 + sizeof(double) + sizeof(int);
-            if (packet.Size() - packet.GetPos() < headerSize) {
+            const int HeaderSize = 2 + sizeof(double) + sizeof(int);
+            if (packet.Size() - packet.GetPos() < HeaderSize) {
                 return;
             }
 
@@ -460,28 +469,21 @@ namespace OffWithTheirNuts {
             }
         }
 
-        internal static void Notify(ZNetPeer peer, string message) {
+        internal void Notify(ZNetPeer peer, PlayerNoticeKind kind) {
+            Notify(
+                peer: peer,
+                notice: new PlayerNotice(kind)
+            );
+        }
+
+        internal void Notify(ZNetPeer peer, PlayerNotice notice) {
             if (peer == null) {
-                ShowNotice(message);
+                showNotice(notice);
             } else if (peer.IsReady()) {
                 Send(
                     peer: peer,
-                    command: Command.Notice,
-                    fill: package => package.Write(message)
-                );
-            }
-        }
-
-        private static void ShowNotice(string message) {
-            MessageHud hud = MessageHud.instance;
-            if (hud != null) {
-                hud.ShowMessage(
-                    type: MessageHud.MessageType.TopLeft,
-                    text: message,
-                    amount: 0,
-                    icon: null,
-                    showDespiteHiddenHUD: false,
-                    log: false
+                    command: Command.LocalizedNotice,
+                    fill: notice.Write
                 );
             }
         }

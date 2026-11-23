@@ -14,18 +14,18 @@ namespace OffWithTheirNuts {
                 return;
             }
             if (resetting) {
-                ServerSync.Notify(
+                serverSync.Notify(
                     peer: requester,
-                    message: "Сброс стерилизации уже выполняется."
+                    kind: PlayerNoticeKind.ResetRunning
                 );
                 return;
             }
 
             resetting = true;
             var duration = Stopwatch.StartNew();
-            ServerSync.Notify(
+            serverSync.Notify(
                 peer: requester,
-                message: "Снимаем стерилизацию с животных..."
+                kind: PlayerNoticeKind.ResetStarted
             );
             StartCoroutine(
                 ResetAnimals(
@@ -64,27 +64,19 @@ namespace OffWithTheirNuts {
                     result: result
                 );
                 duration.Stop();
-                string animalWord = result.Changed % 10 == 1 && result.Changed % 100 != 11
-                    ? "животного" : "животных";
-                string message = string.Format(
-                    provider: CultureInfo.InvariantCulture,
-                    format: "Стерилизация снята у {0} {1} за {2:0.00}с",
-                    arg0: result.Changed,
-                    arg1: animalWord,
-                    arg2: duration.Elapsed.TotalSeconds
-                );
-                if (result.Unconfirmed > 0) {
-                    message += " (не подтверждено снятие у " + result.Unconfirmed + ")";
-                }
-                ServerSync.Notify(
+                serverSync.Notify(
                     peer: requester,
-                    message: message
+                    notice: new PlayerNotice(
+                        count: result.Changed,
+                        seconds: duration.Elapsed.TotalSeconds,
+                        unconfirmed: result.Unconfirmed
+                    )
                 );
                 Logger.LogInfo(
                     string.Format(
                         provider: CultureInfo.InvariantCulture,
-                        format: "Сброс стерилизации. Записей ZDO {0}, обход {1:F1} мс, " +
-                            "снято {2}, не подтверждено {3}, всего {4:F1} мс.",
+                        format: "Sterility reset. Scanned {0} ZDO records in {1:F1} ms, " +
+                            "cleared {2} flags, {3} unconfirmed, {4:F1} ms total.",
                         args: new object[] {
                             scanned,
                             scan.Elapsed.TotalMilliseconds,

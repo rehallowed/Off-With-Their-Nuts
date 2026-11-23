@@ -1,41 +1,116 @@
 using System;
+using BepInEx;
+using BepInEx.Bootstrap;
 using BepInEx.Configuration;
+using HarmonyLib;
 using UnityEngine;
 
 namespace OffWithTheirNuts {
     public sealed partial class OffWithTheirNutsPlugin {
+        private const string KeySectionBreeding = "keySectionBreeding";
+        private const string KeySectionWorldManagement = "keySectionWorldManagement";
+        private const string KeyEnableMod = "keyEnableMod";
+        private const string KeyToggleSterilization = "keyToggleSterilization";
+        private const string KeyResetRestrictions = "keyResetRestrictions";
+
+        private readonly ConfigurationManagerAttributes enabledAttributes = new ConfigurationManagerAttributes();
+        private readonly ConfigurationManagerAttributes shortcutAttributes = new ConfigurationManagerAttributes();
+        private readonly ConfigurationManagerAttributes resetAttributes = new ConfigurationManagerAttributes();
         private ConfigEntry<bool> enabledSetting;
         private ConfigEntry<KeyboardShortcut> shortcutSetting;
 
         private void BindSettings() {
+            enabledAttributes.CustomDrawer = DrawEnabled;
+            enabledAttributes.HideDefaultButton = true;
+            resetAttributes.CustomDrawer = DrawReset;
+            resetAttributes.HideDefaultButton = true;
+            UpdateConfigLabels();
+
             enabledSetting = Config.Bind(
-                section: "01. Размножение",
-                key: "Включить мод",
+                section: KeySectionBreeding,
+                key: KeyEnableMod,
                 defaultValue: true,
                 configDescription: new ConfigDescription(
-                    description: "Применять сохранённые запреты. В мультиплеере эту настройку задаёт сервер.",
+                    description: enabledAttributes.Description,
                     acceptableValues: null,
-                    tags: new ConfigurationManagerAttributes { CustomDrawer = DrawEnabled, HideDefaultButton = true }
+                    tags: enabledAttributes
                 )
             );
             shortcutSetting = Config.Bind(
-                section: "01. Размножение",
-                key: "Переключить стерилизацию",
+                section: KeySectionBreeding,
+                key: KeyToggleSterilization,
                 defaultValue: new KeyboardShortcut(KeyCode.U),
-                description: "Наведи прицел на приручённое животное и нажми эту клавишу или сочетание."
+                configDescription: new ConfigDescription(
+                    description: shortcutAttributes.Description,
+                    acceptableValues: null,
+                    tags: shortcutAttributes
+                )
             );
             Config.Bind(
-                section: "02. Управление миром",
-                key: "Сброс запретов",
+                section: KeySectionWorldManagement,
+                key: KeyResetRestrictions,
                 defaultValue: "",
                 configDescription: new ConfigDescription(
-                    description: "Снять запреты со всех отмеченных животных текущего мира.",
+                    description: resetAttributes.Description,
                     acceptableValues: null,
-                    tags: new ConfigurationManagerAttributes { CustomDrawer = DrawReset, HideDefaultButton = true }
+                    tags: resetAttributes
                 )
             );
             enabledSetting.SettingChanged += OnEnabledChanged;
             shortcutSetting.SettingChanged += OnShortcutChanged;
+        }
+
+        private void UpdateConfigLabels() {
+            TextResources textResources = uiLanguage.TextResources;
+            enabledAttributes.SetText(
+                category: textResources.BreedingCategory,
+                name: textResources.EnabledName,
+                description: textResources.EnabledDescription
+            );
+            shortcutAttributes.SetText(
+                category: textResources.BreedingCategory,
+                name: textResources.ShortcutName,
+                description: textResources.ShortcutDescription
+            );
+            resetAttributes.SetText(
+                category: textResources.WorldManagementCategory,
+                name: textResources.ResetName,
+                description: textResources.ResetDescription
+            );
+        }
+
+        private void OnUiLanguageChanged() {
+            UpdateConfigLabels();
+
+            // Configuration Manager reads the tags when it builds the list, including when it opens.
+            try {
+                foreach (PluginInfo plugin in Chainloader.PluginInfos.Values) {
+                    BaseUnityPlugin manager = plugin.Instance;
+                    if (manager == null) {
+                        continue;
+                    }
+                    Type type = manager.GetType();
+                    if (type.FullName != "ConfigurationManager.ConfigurationManager") {
+                        continue;
+                    }
+                    if (AccessTools.Property(
+                        type: type,
+                        name: "DisplayingWindow"
+                    )?.GetValue(manager) is true) {
+                        AccessTools.Method(
+                            type: type,
+                            name: "BuildSettingList",
+                            parameters: Type.EmptyTypes
+                        )?.Invoke(
+                            obj: manager,
+                            parameters: null
+                        );
+                    }
+                    return;
+                }
+            } catch (Exception error) {
+                Logger.LogWarning("Could not refresh the open Configuration Manager window. " + error.Message);
+            }
         }
 
         private void DrawEnabled(ConfigEntryBase entry) {
@@ -46,7 +121,7 @@ namespace OffWithTheirNuts {
                 GUI.enabled = guiEnabled && interactable;
                 bool requested = GUILayout.Toggle(
                     value: current,
-                    text: current ? "Включено" : "Выключено"
+                    text: current ? uiLanguage.TextResources.Enabled : uiLanguage.TextResources.Disabled
                 );
                 if (requested == current) {
                     return;
@@ -62,7 +137,7 @@ namespace OffWithTheirNuts {
             bool guiEnabled = GUI.enabled;
             try {
                 GUI.enabled = guiEnabled && instance == this && serverSync.CanReset;
-                if (!GUILayout.Button("Сбросить все запреты")) {
+                if (!GUILayout.Button(uiLanguage.TextResources.ResetButton)) {
                     return;
                 }
 
@@ -88,7 +163,16 @@ namespace OffWithTheirNuts {
 
     // Configuration Manager discovers these members by name.
     internal sealed class ConfigurationManagerAttributes {
+        public string Category;
+        public string DispName;
+        public string Description;
         public Action<ConfigEntryBase> CustomDrawer;
         public bool? HideDefaultButton;
+
+        internal void SetText(string category, string name, string description) {
+            Category = category;
+            DispName = name;
+            Description = description;
+        }
     }
 }

@@ -27,9 +27,9 @@ namespace OffWithTheirNuts {
                 return;
             }
             if (resetting || individualChanges.Contains(id)) {
-                ServerSync.Notify(
+                serverSync.Notify(
                     peer: requester,
-                    message: "Изменение уже выполняется. Повтори после завершения."
+                    kind: PlayerNoticeKind.ChangePending
                 );
                 return;
             }
@@ -39,16 +39,16 @@ namespace OffWithTheirNuts {
                 requester: requester,
                 target: target
             )) {
-                ServerSync.Notify(
+                serverSync.Notify(
                     peer: requester,
-                    message: "Подойди к приручённому животному, которое может размножаться."
+                    kind: PlayerNoticeKind.TargetUnavailable
                 );
                 return;
             }
             if (IsSterile(target) == requestedState) {
-                ServerSync.Notify(
+                serverSync.Notify(
                     peer: requester,
-                    message: requestedState ? "Животное уже стерилизовано." : "Размножение уже разрешено."
+                    kind: requestedState ? PlayerNoticeKind.AlreadySterile : PlayerNoticeKind.AlreadyFertile
                 );
                 return;
             }
@@ -72,13 +72,13 @@ namespace OffWithTheirNuts {
                     playEffects: true,
                     result: result
                 );
-                string message = "Не удалось подтвердить изменение для животного.";
+                PlayerNoticeKind notice = PlayerNoticeKind.ChangeUnconfirmed;
                 if (result.Changed == 1) {
-                    message = requestedState ? "Животное стерилизовано" : "Животное снова фертильно";
+                    notice = requestedState ? PlayerNoticeKind.Sterilized : PlayerNoticeKind.FertileAgain;
                 }
-                ServerSync.Notify(
+                serverSync.Notify(
                     peer: requester,
-                    message: message
+                    kind: notice
                 );
             } finally {
                 individualChanges.Remove(id);
@@ -154,7 +154,7 @@ namespace OffWithTheirNuts {
                     );
                 }
             } catch (Exception error) {
-                Logger.LogWarning("Не удалось воспроизвести эффект стерилизации. " + error.Message);
+                Logger.LogWarning("Could not play the sterilization effect. " + error.Message);
             }
         }
 

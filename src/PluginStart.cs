@@ -24,36 +24,46 @@ namespace OffWithTheirNuts {
     )]
     public sealed partial class OffWithTheirNutsPlugin : BaseUnityPlugin {
         private static OffWithTheirNutsPlugin instance;
+        private readonly AnimalHoverText animalHoverText = new AnimalHoverText();
         private Harmony harmony;
         private ServerSync serverSync;
         private SterilizationHotkey hotkey;
+        private GameUiLanguage uiLanguage;
 
         internal static ServerSync ActiveServerSync => instance == null ? null : instance.serverSync;
+        internal static GameUiLanguage ActiveUiLanguage => instance == null ? null : instance.uiLanguage;
         private bool RestrictionsActive => serverSync?.RestrictionsActive == true;
 
         private void Awake() {
             harmony = new Harmony(PluginId);
             try {
+                uiLanguage = new GameUiLanguage();
                 worldObjects = AccessTools.FieldRefAccess<ZDOMan, Dictionary<ZDOID, ZDO>>("m_objectsByID");
                 hotkey = new SterilizationHotkey(
                     restrictionsActive: () => RestrictionsActive,
                     onTargetSelected: ToggleTarget
                 );
                 BindSettings();
+                uiLanguage.Changed += OnUiLanguageChanged;
                 serverSync = new ServerSync(
                     enabledSetting: enabledSetting,
                     refreshHotkey: RefreshHotkey,
                     onWorldClosed: OnWorldClosed,
                     startChange: StartChange,
                     startReset: StartReset,
-                    setSterility: SetSterility
+                    setSterility: SetSterility,
+                    showNotice: notice => notice.Show(uiLanguage.TextResources)
                 );
                 harmony.PatchAll(typeof(OffWithTheirNutsPlugin).Assembly);
+                if (!GameUiLanguage.PatchLanguageSetup(harmony)) {
+                    Logger.LogWarning("Valheim's language setup method was not found. Using the startup language.");
+                }
                 instance = this;
-                Logger.LogInfo(PluginName + " " + PluginVersion + " загружен.");
+                Logger.LogInfo(PluginName + " " + PluginVersion + " loaded.");
             } catch (Exception error) {
                 harmony.UnpatchSelf();
-                Logger.LogError(PluginName + " отключён при инициализации. " + error);
+                ReleaseUiLanguage();
+                Logger.LogError(PluginName + " was disabled during initialization. " + error);
             }
         }
 
@@ -68,7 +78,14 @@ namespace OffWithTheirNuts {
             if (enabledSetting != null) {
                 enabledSetting.SettingChanged -= OnEnabledChanged;
             }
+            ReleaseUiLanguage();
             harmony?.UnpatchSelf();
+        }
+
+        private void ReleaseUiLanguage() {
+            if (uiLanguage != null) {
+                uiLanguage.Changed -= OnUiLanguageChanged;
+            }
         }
 
         private void OnWorldClosed() {

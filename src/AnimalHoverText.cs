@@ -2,13 +2,20 @@ using System;
 using HarmonyLib;
 
 namespace OffWithTheirNuts {
-    public sealed partial class OffWithTheirNutsPlugin {
+    internal sealed class AnimalHoverText {
         private string lastHoverText;
         private string lastSterileHoverText;
+        private TextResources lastTextResources;
+        private string sterileLine;
 
-        private string WithSterileStatus(string hoverText) {
+        internal string WithSterileStatus(string hoverText, TextResources textResources) {
+            if (lastTextResources != textResources) {
+                lastTextResources = textResources;
+                lastHoverText = null;
+                sterileLine = "\n<color=#FFC6A8>" + textResources.SterileStatus + "</color>";
+            }
+
             if (hoverText != lastHoverText) {
-                const string sterileLine = "\n<color=#FFC6A8>Стерилизован</color>";
                 // Valheim starts each interaction hint on a new line with an opening bracket.
                 int firstHint = hoverText.IndexOf(
                     value: "\n[",
@@ -22,7 +29,9 @@ namespace OffWithTheirNuts {
             }
             return lastSterileHoverText;
         }
+    }
 
+    public sealed partial class OffWithTheirNutsPlugin {
         [HarmonyPatch(
             declaringType: typeof(Tameable),
             methodName: "GetHoverText"
@@ -31,7 +40,10 @@ namespace OffWithTheirNuts {
             private static void Postfix(ref string __result, ZNetView ___m_nview) {
                 OffWithTheirNutsPlugin mod = instance;
                 if (mod != null && mod.RestrictionsActive && !string.IsNullOrEmpty(__result) && IsSterile(___m_nview?.GetZDO())) {
-                    __result = mod.WithSterileStatus(__result);
+                    __result = mod.animalHoverText.WithSterileStatus(
+                        hoverText: __result,
+                        textResources: mod.uiLanguage.TextResources
+                    );
                 }
             }
         }
