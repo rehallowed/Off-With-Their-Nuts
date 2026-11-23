@@ -45,6 +45,10 @@ namespace OffWithTheirNuts {
                 );
                 BindSettings();
                 uiLanguage.Changed += OnUiLanguageChanged;
+                var effects = new SterilizationEffects(
+                    enabled: effectsSetting,
+                    logger: Logger
+                );
                 serverSync = new ServerSync(
                     enabledSetting: enabledSetting,
                     refreshHotkey: RefreshHotkey,
@@ -52,7 +56,8 @@ namespace OffWithTheirNuts {
                     startChange: StartChange,
                     startReset: StartReset,
                     setSterility: SetSterility,
-                    showNotice: notice => notice.Show(uiLanguage.TextResources)
+                    showNotice: notice => notice.Show(uiLanguage.TextResources),
+                    playSterilizationEffect: effects.PlayIfEnabled
                 );
                 harmony.PatchAll(typeof(OffWithTheirNutsPlugin).Assembly);
                 if (!GameUiLanguage.PatchLanguageSetup(harmony)) {

@@ -11,13 +11,16 @@ namespace OffWithTheirNuts {
         private const string KeySectionWorldManagement = "keySectionWorldManagement";
         private const string KeyEnableMod = "keyEnableMod";
         private const string KeyToggleSterilization = "keyToggleSterilization";
+        private const string KeySterilizationEffects = "keySterilizationEffects";
         private const string KeyResetRestrictions = "keyResetRestrictions";
 
         private readonly ConfigurationManagerAttributes enabledAttributes = new ConfigurationManagerAttributes();
         private readonly ConfigurationManagerAttributes shortcutAttributes = new ConfigurationManagerAttributes();
+        private readonly ConfigurationManagerAttributes effectsAttributes = new ConfigurationManagerAttributes();
         private readonly ConfigurationManagerAttributes resetAttributes = new ConfigurationManagerAttributes();
         private ConfigEntry<bool> enabledSetting;
         private ConfigEntry<KeyboardShortcut> shortcutSetting;
+        private ConfigEntry<bool> effectsSetting;
 
         private void BindSettings() {
             enabledAttributes.CustomDrawer = DrawEnabled;
@@ -46,6 +49,16 @@ namespace OffWithTheirNuts {
                     tags: shortcutAttributes
                 )
             );
+            effectsSetting = Config.Bind(
+                section: KeySectionBreeding,
+                key: KeySterilizationEffects,
+                defaultValue: true,
+                configDescription: new ConfigDescription(
+                    description: effectsAttributes.Description,
+                    acceptableValues: null,
+                    tags: effectsAttributes
+                )
+            );
             Config.Bind(
                 section: KeySectionWorldManagement,
                 key: KeyResetRestrictions,
@@ -71,6 +84,11 @@ namespace OffWithTheirNuts {
                 category: textResources.BreedingCategory,
                 name: textResources.ShortcutName,
                 description: textResources.ShortcutDescription
+            );
+            effectsAttributes.SetText(
+                category: textResources.BreedingCategory,
+                name: textResources.SterilizationEffectsName,
+                description: textResources.SterilizationEffectsDescription
             );
             resetAttributes.SetText(
                 category: textResources.WorldManagementCategory,

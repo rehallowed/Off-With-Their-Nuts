@@ -20,6 +20,10 @@ namespace OffWithTheirNuts {
             "Переключить стерилизацию";
         internal override string ShortcutDescription =>
             "Наведи прицел на приручённое животное и нажми эту клавишу или сочетание.";
+        internal override string SterilizationEffectsName =>
+            "Эффекты стерилизации";
+        internal override string SterilizationEffectsDescription =>
+            "Воспроизводить звук и визуальные эффекты при стерилизации животного или её отмене.";
         internal override string ResetName =>
             "Сброс запретов";
         internal override string ResetDescription =>

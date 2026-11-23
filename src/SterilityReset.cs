@@ -60,7 +60,6 @@ namespace OffWithTheirNuts {
                 yield return serverSync.ApplyChanges(
                     remaining: marked,
                     requestedState: false,
-                    playEffects: false,
                     result: result
                 );
                 duration.Stop();

@@ -14,8 +14,9 @@ namespace OffWithTheirNuts {
         private readonly Action onWorldClosed;
         private readonly Action<ZNetPeer, ZDOID, bool> startChange;
         private readonly Action<ZNetPeer> startReset;
-        private readonly Action<ZDO, bool, bool> setSterility;
+        private readonly Action<ZDO, bool> setSterility;
         private readonly Action<PlayerNotice> showNotice;
+        private readonly Action<ZDOID> playSterilizationEffect;
         private ZNet network;
         private bool canManageWorld;
 
@@ -39,8 +40,9 @@ namespace OffWithTheirNuts {
             Action onWorldClosed,
             Action<ZNetPeer, ZDOID, bool> startChange,
             Action<ZNetPeer> startReset,
-            Action<ZDO, bool, bool> setSterility,
-            Action<PlayerNotice> showNotice
+            Action<ZDO, bool> setSterility,
+            Action<PlayerNotice> showNotice,
+            Action<ZDOID> playSterilizationEffect
         ) {
             this.enabledSetting = enabledSetting;
             this.refreshHotkey = refreshHotkey;
@@ -49,6 +51,7 @@ namespace OffWithTheirNuts {
             this.startReset = startReset;
             this.setSterility = setSterility;
             this.showNotice = showNotice;
+            this.playSterilizationEffect = playSterilizationEffect;
         }
 
         private enum Command : byte {
@@ -58,7 +61,8 @@ namespace OffWithTheirNuts {
             Toggle = 4,
             ResetAll = 5,
             OwnerWrites = 6,
-            LocalizedNotice = 7
+            LocalizedNotice = 7,
+            SterilizationEffect = 8
         }
 
         internal struct TargetWrite {
@@ -210,6 +214,10 @@ namespace OffWithTheirNuts {
                             }
                             break;
                         }
+                        case Command.SterilizationEffect when remaining == TargetWireSize: {
+                            playSterilizationEffect(package.ReadZDOID());
+                            break;
+                        }
                     }
                 }
             } catch (IOException) {
@@ -326,7 +334,6 @@ namespace OffWithTheirNuts {
         internal IEnumerator ApplyChanges(
             List<TargetWrite> remaining,
             bool requestedState,
-            bool playEffects,
             ChangeResult result
         ) {
             if (remaining.Count == 0) {
@@ -351,8 +358,7 @@ namespace OffWithTheirNuts {
                     } else if (zdo.IsOwner() || !zdo.HasOwner()) {
                         setSterility(
                             arg1: zdo,
-                            arg2: requestedState,
-                            arg3: playEffects
+                            arg2: requestedState
                         );
                         result.Changed++;
                         remaining.RemoveAt(i);
@@ -392,7 +398,6 @@ namespace OffWithTheirNuts {
                             peer: batch.Key,
                             writes: batch.Value,
                             requestedState: requestedState,
-                            playEffects: playEffects,
                             expiresAt: expiresAt
                         );
                         batch.Value.Clear();
@@ -411,7 +416,6 @@ namespace OffWithTheirNuts {
             ZNetPeer peer,
             List<TargetWrite> writes,
             bool requestedState,
-            bool playEffects,
             double expiresAt
         ) {
             for (int start = 0; start < writes.Count; start += MaxBatch) {
@@ -422,7 +426,6 @@ namespace OffWithTheirNuts {
                 var packet = new ZPackage();
                 packet.Write((byte)Command.OwnerWrites);
                 packet.Write(requestedState);
-                packet.Write(playEffects);
                 packet.Write(expiresAt);
                 packet.Write(count);
                 for (int i = start; i < start + count; i++) {
@@ -437,13 +440,12 @@ namespace OffWithTheirNuts {
         }
 
         private void ApplyOwnerWrites(ZPackage packet) {
-            const int HeaderSize = 2 + sizeof(double) + sizeof(int);
+            const int HeaderSize = sizeof(bool) + sizeof(double) + sizeof(int);
             if (packet.Size() - packet.GetPos() < HeaderSize) {
                 return;
             }
 
             bool requestedState = packet.ReadBool();
-            bool playEffects = packet.ReadBool();
             double expiresAt = packet.ReadDouble();
             int count = packet.ReadInt();
             if (count < 1 || count > MaxBatch || ZDOMan.instance == null ||
@@ -462,11 +464,27 @@ namespace OffWithTheirNuts {
 
                 setSterility(
                     arg1: zdo,
-                    arg2: requestedState,
-                    arg3: playEffects
+                    arg2: requestedState
                 );
                 ZDOMan.instance.ForceSendZDO(id);
             }
+        }
+
+        internal void PublishSterilizationEffect(ZDOID id) {
+            if (network == null || !network.IsServer()) {
+                return;
+            }
+
+            foreach (ZNetPeer peer in network.GetPeers()) {
+                if (peer.IsReady()) {
+                    Send(
+                        peer: peer,
+                        command: Command.SterilizationEffect,
+                        fill: package => package.Write(id)
+                    );
+                }
+            }
+            playSterilizationEffect(id);
         }
 
         internal void Notify(ZNetPeer peer, PlayerNoticeKind kind) {

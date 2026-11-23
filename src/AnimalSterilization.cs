@@ -1,4 +1,3 @@
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using HarmonyLib;
@@ -69,12 +68,12 @@ namespace OffWithTheirNuts {
                 yield return serverSync.ApplyChanges(
                     remaining: new List<ServerSync.TargetWrite>(1) { new ServerSync.TargetWrite(id) },
                     requestedState: requestedState,
-                    playEffects: true,
                     result: result
                 );
                 PlayerNoticeKind notice = PlayerNoticeKind.ChangeUnconfirmed;
                 if (result.Changed == 1) {
                     notice = requestedState ? PlayerNoticeKind.Sterilized : PlayerNoticeKind.FertileAgain;
+                    serverSync.PublishSterilizationEffect(id);
                 }
                 serverSync.Notify(
                     peer: requester,
@@ -119,7 +118,7 @@ namespace OffWithTheirNuts {
             }
         }
 
-        private void SetSterility(ZDO zdo, bool requestedState, bool playEffects) {
+        private static void SetSterility(ZDO zdo, bool requestedState) {
             if (IsSterile(zdo) == requestedState) {
                 return;
             }
@@ -131,31 +130,6 @@ namespace OffWithTheirNuts {
                 hash: SterileKey,
                 value: requestedState
             );
-            if (playEffects) {
-                PlayBirthEffects(ZNetScene.instance?.FindInstance(zdo.m_uid));
-            }
-        }
-
-        private void PlayBirthEffects(GameObject target) {
-            if (target == null) {
-                return;
-            }
-
-            try {
-                Procreation reproduction = target.GetComponent<Procreation>();
-                if (reproduction != null) {
-                    reproduction.m_birthEffects?.Create(
-                        basePos: target.transform.position,
-                        baseRot: Quaternion.identity,
-                        baseParent: null,
-                        scale: 1f,
-                        variant: -1,
-                        gamepadEffectsExclusiveToPlayer: ZDOID.None
-                    );
-                }
-            } catch (Exception error) {
-                Logger.LogWarning("Could not play the sterilization effect. " + error.Message);
-            }
         }
 
         [HarmonyPatch(

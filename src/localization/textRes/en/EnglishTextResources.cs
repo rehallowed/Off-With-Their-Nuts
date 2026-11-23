@@ -20,6 +20,10 @@ namespace OffWithTheirNuts {
             "Toggle sterility";
         internal override string ShortcutDescription =>
             "Aim at a tamed animal and press this key or shortcut.";
+        internal override string SterilizationEffectsName =>
+            "Sterilization effects";
+        internal override string SterilizationEffectsDescription =>
+            "Play sounds and visual effects when an animal is sterilized or its fertility is restored.";
         internal override string ResetName =>
             "Reset breeding restrictions";
         internal override string ResetDescription =>

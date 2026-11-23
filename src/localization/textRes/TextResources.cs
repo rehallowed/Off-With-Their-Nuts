@@ -35,6 +35,8 @@ namespace OffWithTheirNuts {
         internal abstract string Disabled { get; }
         internal abstract string ShortcutName { get; }
         internal abstract string ShortcutDescription { get; }
+        internal abstract string SterilizationEffectsName { get; }
+        internal abstract string SterilizationEffectsDescription { get; }
         internal abstract string ResetName { get; }
         internal abstract string ResetDescription { get; }
         internal abstract string ResetButton { get; }
