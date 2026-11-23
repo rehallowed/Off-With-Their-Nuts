@@ -21,6 +21,7 @@
     <Reference Include="assembly_valheim" HintPath="$(ValheimManagedDir)/assembly_valheim.dll" />
     <Reference Include="assembly_utils" HintPath="$(ValheimManagedDir)/assembly_utils.dll" />
     <Reference Include="UnityEngine" HintPath="$(ValheimManagedDir)/UnityEngine.dll" />
+    <Reference Include="UnityEngine.AudioModule" HintPath="$(ValheimManagedDir)/UnityEngine.AudioModule.dll" />
     <Reference Include="UnityEngine.CoreModule" HintPath="$(ValheimManagedDir)/UnityEngine.CoreModule.dll" />
     <Reference Include="UnityEngine.IMGUIModule" HintPath="$(ValheimManagedDir)/UnityEngine.IMGUIModule.dll" />
     <Reference Include="UnityEngine.PhysicsModule" HintPath="$(ValheimManagedDir)/UnityEngine.PhysicsModule.dll" />

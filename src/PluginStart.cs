@@ -57,7 +57,7 @@ namespace OffWithTheirNuts {
                     startChange: StartChange,
                     startReset: StartReset,
                     showNotice: notice => notice.Show(uiLanguage.TextResources),
-                    playSterilizationEffect: effects.PlayIfEnabled
+                    playSterilityChangeEffect: effects.PlayIfEnabled
                 );
                 harmony.PatchAll(typeof(OffWithTheirNutsPlugin).Assembly);
                 if (!GameUiLanguage.PatchLanguageSetup(harmony)) {

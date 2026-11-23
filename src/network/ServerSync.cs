@@ -12,7 +12,7 @@ namespace OffWithTheirNuts {
         private readonly Action<ZNetPeer, ZDOID, bool> startChange;
         private readonly Action<ZNetPeer> startReset;
         private readonly Action<PlayerNotice> showNotice;
-        private readonly Action<ZDOID> playSterilizationEffect;
+        private readonly Action<ZDOID, bool> playSterilityChangeEffect;
         private ZNet network;
         private bool canManageWorld;
 
@@ -38,7 +38,7 @@ namespace OffWithTheirNuts {
             Action<ZNetPeer, ZDOID, bool> startChange,
             Action<ZNetPeer> startReset,
             Action<PlayerNotice> showNotice,
-            Action<ZDOID> playSterilizationEffect
+            Action<ZDOID, bool> playSterilityChangeEffect
         ) {
             this.enabledSetting = enabledSetting;
             this.refreshHotkey = refreshHotkey;
@@ -46,7 +46,7 @@ namespace OffWithTheirNuts {
             this.startChange = startChange;
             this.startReset = startReset;
             this.showNotice = showNotice;
-            this.playSterilizationEffect = playSterilizationEffect;
+            this.playSterilityChangeEffect = playSterilityChangeEffect;
         }
 
         private void OpenWorld(ZNet current) {
@@ -193,8 +193,11 @@ namespace OffWithTheirNuts {
                             }
                             break;
                         }
-                        case NetworkCommand.SterilizationEffect when remaining == TargetWireSize: {
-                            playSterilizationEffect(package.ReadZDOID());
+                        case NetworkCommand.SterilityChangeEffect when remaining == TargetWireSize + sizeof(bool): {
+                            playSterilityChangeEffect(
+                                arg1: package.ReadZDOID(),
+                                arg2: package.ReadBool()
+                            );
                             break;
                         }
                     }
@@ -254,7 +257,7 @@ namespace OffWithTheirNuts {
             return player != null && player.GetOwner() == requester.m_uid ? player : null;
         }
 
-        internal void PublishSterilizationEffect(ZDOID id) {
+        internal void PublishSterilityChangeEffect(ZDOID id, bool isSterile) {
             if (network == null || !network.IsServer()) {
                 return;
             }
@@ -263,12 +266,18 @@ namespace OffWithTheirNuts {
                 if (peer.IsReady()) {
                     Send(
                         peer: peer,
-                        command: NetworkCommand.SterilizationEffect,
-                        fill: package => package.Write(id)
+                        command: NetworkCommand.SterilityChangeEffect,
+                        fill: package => {
+                            package.Write(id);
+                            package.Write(isSterile);
+                        }
                     );
                 }
             }
-            playSterilizationEffect(id);
+            playSterilityChangeEffect(
+                arg1: id,
+                arg2: isSterile
+            );
         }
 
         internal void Notify(ZNetPeer peer, PlayerNoticeKind kind) {

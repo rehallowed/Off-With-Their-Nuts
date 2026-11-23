@@ -74,7 +74,10 @@ namespace OffWithTheirNuts {
                 PlayerNoticeKind notice = PlayerNoticeKind.ChangeUnconfirmed;
                 if (result.Changed == 1) {
                     notice = requestedState ? PlayerNoticeKind.Sterilized : PlayerNoticeKind.FertileAgain;
-                    serverSync.PublishSterilizationEffect(id);
+                    serverSync.PublishSterilityChangeEffect(
+                        id: id,
+                        isSterile: requestedState
+                    );
                 }
                 serverSync.Notify(
                     peer: requester,
