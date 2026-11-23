@@ -5,7 +5,7 @@
 Regular boars messing up your two-star breeding plans?  
 Have the wolves guarding your base eaten all the deer and filled the woods with their pups?  
 Can't get out of the house because of a herd of lox?  
-Just cut their nuts off!
+**Just cut their nuts off!**
 
 You can sterilize any tamed animal that can breed. A sterilized animal can neither produce offspring nor impregnate another animal. Sterilization is reversible by default.
 
@@ -68,7 +68,7 @@ The mod requires BepInEx and Jötunn. Valheim Configuration Manager is optional.
 Обычные свиньи мешают размножаться двухзвёздочным?  
 Охраняющие базу волки сожрали всех оленей и заполонили леса своими отпрысками?  
 Толпа быкоящеров не даёт выйти из дома?   
-Почему бы вам не отрезать им яйца!
+**Почему бы вам не отрезать им яйца!**
 
 Мод позволяет выборочно запретить размножение любому приручённому животному, которое может размножаться. Стерилизованное животное не может дать потомство или оплодотворить другую особь. По умолчанию стерилизация обратима.
 
