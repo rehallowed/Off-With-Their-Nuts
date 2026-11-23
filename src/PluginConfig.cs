@@ -27,6 +27,7 @@ namespace OffWithTheirNuts {
         private void BindSettings() {
             enabledAttributes.CustomDrawer = DrawEnabled;
             enabledAttributes.HideDefaultButton = true;
+            effectsAttributes.CustomDrawer = DrawEffects;
             resetAttributes.CustomDrawer = DrawReset;
             resetAttributes.HideDefaultButton = true;
             cleanupAttributes.CustomDrawer = DrawCleanup;
@@ -158,10 +159,7 @@ namespace OffWithTheirNuts {
             bool guiEnabled = GUI.enabled;
             try {
                 GUI.enabled = guiEnabled && interactable;
-                bool requested = GUILayout.Toggle(
-                    value: current,
-                    text: current ? uiLanguage.TextResources.Enabled : uiLanguage.TextResources.Disabled
-                );
+                bool requested = DrawLocalizedToggle(current);
                 if (requested == current) {
                     return;
                 }
@@ -170,6 +168,22 @@ namespace OffWithTheirNuts {
             } finally {
                 GUI.enabled = guiEnabled;
             }
+        }
+
+        private void DrawEffects(ConfigEntryBase entry) {
+            bool current = effectsSetting.Value;
+            bool requested = DrawLocalizedToggle(current);
+            if (requested != current) {
+                effectsSetting.Value = requested;
+            }
+        }
+
+        private bool DrawLocalizedToggle(bool current) {
+            TextResources textResources = uiLanguage.TextResources;
+            return GUILayout.Toggle(
+                value: current,
+                text: current ? textResources.Enabled : textResources.Disabled
+            );
         }
 
         private void DrawReset(ConfigEntryBase entry) {
