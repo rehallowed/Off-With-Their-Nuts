@@ -30,8 +30,9 @@ namespace OffWithTheirNuts {
         internal abstract string SterilizeHint { get; }
         internal abstract string IrreversibleSterilizationHint { get; }
         internal abstract string RestoreFertilityHint { get; }
-        internal abstract string BreedingCategory { get; }
-        internal abstract string WorldManagementCategory { get; }
+        internal abstract string ModActivationCategory { get; }
+        internal abstract string PersonalSettingsCategory { get; }
+        internal abstract string AdministrationCategory { get; }
         internal abstract string EnabledName { get; }
         internal abstract string EnabledDescription { get; }
         internal abstract string IrreversibleSterilizationName { get; }

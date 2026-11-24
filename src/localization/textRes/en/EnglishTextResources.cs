@@ -10,10 +10,12 @@ namespace OffWithTheirNuts {
             "Sterilize (irreversible)";
         internal override string RestoreFertilityHint =>
             "Restore fertility";
-        internal override string BreedingCategory =>
-            "Breeding";
-        internal override string WorldManagementCategory =>
-            "World Management";
+        internal override string ModActivationCategory =>
+            "Mod Activation";
+        internal override string PersonalSettingsCategory =>
+            "Personal Settings";
+        internal override string AdministrationCategory =>
+            "Administration";
         internal override string EnabledName =>
             "Enable mod";
         internal override string EnabledDescription =>

@@ -7,14 +7,23 @@ using UnityEngine;
 
 namespace OffWithTheirNuts {
     public sealed partial class OffWithTheirNutsPlugin {
-        private const string KeySectionBreeding = "keySectionBreeding";
-        private const string KeySectionWorldManagement = "keySectionWorldManagement";
+        private const string KeySectionModActivation = "keySectionModActivation";
         private const string KeyEnableMod = "keyEnableMod";
-        private const string KeyIrreversibleSterilization = "keyIrreversibleSterilization";
-        private const string KeyToggleSterilization = "keyToggleSterilization";
+        private const int OrderEnableMod = 0;
+
+        private const string KeySectionPersonalSettings = "keySectionPersonalSettings";
+        private const string KeySterilizationShortcut = "keySterilizationShortcut";
+        private const int OrderToggleSterilization = 1;
         private const string KeySterilizationEffects = "keySterilizationEffects";
+        private const int OrderSterilizationEffects = 0;
+
+        private const string KeySectionWorldAdministration = "keySectionWorldAdministration";
+        private const string KeyIrreversibleSterilization = "keyIrreversibleSterilization";
+        private const int OrderIrreversibleSterilization = 2;
         private const string KeyResetRestrictions = "keyResetRestrictions";
+        private const int OrderResetRestrictions = 1;
         private const string KeyRemoveModData = "keyRemoveModData";
+        private const int OrderRemoveModData = 0;
 
         private readonly ConfigurationManagerAttributes enabledAttributes = new ConfigurationManagerAttributes();
         private readonly ConfigurationManagerAttributes irreversibleSterilizationAttributes = new ConfigurationManagerAttributes();
@@ -30,18 +39,23 @@ namespace OffWithTheirNuts {
         private void BindSettings() {
             enabledAttributes.CustomDrawer = DrawEnabled;
             enabledAttributes.HideDefaultButton = true;
+            enabledAttributes.Order = OrderEnableMod;
+            shortcutAttributes.Order = OrderToggleSterilization;
+            effectsAttributes.CustomDrawer = DrawEffects;
+            effectsAttributes.Order = OrderSterilizationEffects;
             irreversibleSterilizationAttributes.CustomDrawer = DrawIrreversibleSterilization;
             irreversibleSterilizationAttributes.HideDefaultButton = true;
-            effectsAttributes.CustomDrawer = DrawEffects;
+            irreversibleSterilizationAttributes.Order = OrderIrreversibleSterilization;
             resetAttributes.CustomDrawer = DrawReset;
             resetAttributes.HideDefaultButton = true;
+            resetAttributes.Order = OrderResetRestrictions;
             cleanupAttributes.CustomDrawer = DrawCleanup;
             cleanupAttributes.HideDefaultButton = true;
-            cleanupAttributes.Order = int.MinValue;
+            cleanupAttributes.Order = OrderRemoveModData;
             UpdateConfigLabels();
 
             enabledSetting = Config.Bind(
-                section: KeySectionBreeding,
+                section: KeySectionModActivation,
                 key: KeyEnableMod,
                 defaultValue: true,
                 configDescription: new ConfigDescription(
@@ -50,19 +64,9 @@ namespace OffWithTheirNuts {
                     tags: enabledAttributes
                 )
             );
-            irreversibleSterilizationSetting = Config.Bind(
-                section: KeySectionBreeding,
-                key: KeyIrreversibleSterilization,
-                defaultValue: false,
-                configDescription: new ConfigDescription(
-                    description: irreversibleSterilizationAttributes.Description,
-                    acceptableValues: null,
-                    tags: irreversibleSterilizationAttributes
-                )
-            );
             shortcutSetting = Config.Bind(
-                section: KeySectionBreeding,
-                key: KeyToggleSterilization,
+                section: KeySectionPersonalSettings,
+                key: KeySterilizationShortcut,
                 defaultValue: new KeyboardShortcut(KeyCode.U),
                 configDescription: new ConfigDescription(
                     description: shortcutAttributes.Description,
@@ -71,7 +75,7 @@ namespace OffWithTheirNuts {
                 )
             );
             effectsSetting = Config.Bind(
-                section: KeySectionBreeding,
+                section: KeySectionPersonalSettings,
                 key: KeySterilizationEffects,
                 defaultValue: true,
                 configDescription: new ConfigDescription(
@@ -80,8 +84,18 @@ namespace OffWithTheirNuts {
                     tags: effectsAttributes
                 )
             );
+            irreversibleSterilizationSetting = Config.Bind(
+                section: KeySectionWorldAdministration,
+                key: KeyIrreversibleSterilization,
+                defaultValue: false,
+                configDescription: new ConfigDescription(
+                    description: irreversibleSterilizationAttributes.Description,
+                    acceptableValues: null,
+                    tags: irreversibleSterilizationAttributes
+                )
+            );
             Config.Bind(
-                section: KeySectionWorldManagement,
+                section: KeySectionWorldAdministration,
                 key: KeyResetRestrictions,
                 defaultValue: "",
                 configDescription: new ConfigDescription(
@@ -91,7 +105,7 @@ namespace OffWithTheirNuts {
                 )
             );
             Config.Bind(
-                section: KeySectionWorldManagement,
+                section: KeySectionWorldAdministration,
                 key: KeyRemoveModData,
                 defaultValue: "",
                 configDescription: new ConfigDescription(
@@ -108,32 +122,32 @@ namespace OffWithTheirNuts {
         private void UpdateConfigLabels() {
             TextResources textResources = uiLanguage.TextResources;
             enabledAttributes.SetText(
-                category: textResources.BreedingCategory,
+                category: textResources.ModActivationCategory,
                 name: textResources.EnabledName,
                 description: textResources.EnabledDescription
             );
-            irreversibleSterilizationAttributes.SetText(
-                category: textResources.BreedingCategory,
-                name: textResources.IrreversibleSterilizationName,
-                description: textResources.IrreversibleSterilizationDescription
-            );
             shortcutAttributes.SetText(
-                category: textResources.BreedingCategory,
+                category: textResources.PersonalSettingsCategory,
                 name: textResources.ShortcutName,
                 description: textResources.ShortcutDescription
             );
             effectsAttributes.SetText(
-                category: textResources.BreedingCategory,
+                category: textResources.PersonalSettingsCategory,
                 name: textResources.SterilizationEffectsName,
                 description: textResources.SterilizationEffectsDescription
             );
+            irreversibleSterilizationAttributes.SetText(
+                category: textResources.AdministrationCategory,
+                name: textResources.IrreversibleSterilizationName,
+                description: textResources.IrreversibleSterilizationDescription
+            );
             resetAttributes.SetText(
-                category: textResources.WorldManagementCategory,
+                category: textResources.AdministrationCategory,
                 name: textResources.ResetName,
                 description: textResources.ResetDescription
             );
             cleanupAttributes.SetText(
-                category: textResources.WorldManagementCategory,
+                category: textResources.AdministrationCategory,
                 name: textResources.CleanupName,
                 description: textResources.CleanupDescription
             );
