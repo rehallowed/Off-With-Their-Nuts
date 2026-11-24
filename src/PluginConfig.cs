@@ -10,23 +10,28 @@ namespace OffWithTheirNuts {
         private const string KeySectionBreeding = "keySectionBreeding";
         private const string KeySectionWorldManagement = "keySectionWorldManagement";
         private const string KeyEnableMod = "keyEnableMod";
+        private const string KeyIrreversibleSterilization = "keyIrreversibleSterilization";
         private const string KeyToggleSterilization = "keyToggleSterilization";
         private const string KeySterilizationEffects = "keySterilizationEffects";
         private const string KeyResetRestrictions = "keyResetRestrictions";
         private const string KeyRemoveModData = "keyRemoveModData";
 
         private readonly ConfigurationManagerAttributes enabledAttributes = new ConfigurationManagerAttributes();
+        private readonly ConfigurationManagerAttributes irreversibleSterilizationAttributes = new ConfigurationManagerAttributes();
         private readonly ConfigurationManagerAttributes shortcutAttributes = new ConfigurationManagerAttributes();
         private readonly ConfigurationManagerAttributes effectsAttributes = new ConfigurationManagerAttributes();
         private readonly ConfigurationManagerAttributes resetAttributes = new ConfigurationManagerAttributes();
         private readonly ConfigurationManagerAttributes cleanupAttributes = new ConfigurationManagerAttributes();
         private ConfigEntry<bool> enabledSetting;
+        private ConfigEntry<bool> irreversibleSterilizationSetting;
         private ConfigEntry<KeyboardShortcut> shortcutSetting;
         private ConfigEntry<bool> effectsSetting;
 
         private void BindSettings() {
             enabledAttributes.CustomDrawer = DrawEnabled;
             enabledAttributes.HideDefaultButton = true;
+            irreversibleSterilizationAttributes.CustomDrawer = DrawIrreversibleSterilization;
+            irreversibleSterilizationAttributes.HideDefaultButton = true;
             effectsAttributes.CustomDrawer = DrawEffects;
             resetAttributes.CustomDrawer = DrawReset;
             resetAttributes.HideDefaultButton = true;
@@ -43,6 +48,16 @@ namespace OffWithTheirNuts {
                     description: enabledAttributes.Description,
                     acceptableValues: null,
                     tags: enabledAttributes
+                )
+            );
+            irreversibleSterilizationSetting = Config.Bind(
+                section: KeySectionBreeding,
+                key: KeyIrreversibleSterilization,
+                defaultValue: false,
+                configDescription: new ConfigDescription(
+                    description: irreversibleSterilizationAttributes.Description,
+                    acceptableValues: null,
+                    tags: irreversibleSterilizationAttributes
                 )
             );
             shortcutSetting = Config.Bind(
@@ -85,7 +100,8 @@ namespace OffWithTheirNuts {
                     tags: cleanupAttributes
                 )
             );
-            enabledSetting.SettingChanged += OnEnabledChanged;
+            enabledSetting.SettingChanged += OnWorldSettingChanged;
+            irreversibleSterilizationSetting.SettingChanged += OnWorldSettingChanged;
             shortcutSetting.SettingChanged += OnShortcutChanged;
         }
 
@@ -95,6 +111,11 @@ namespace OffWithTheirNuts {
                 category: textResources.BreedingCategory,
                 name: textResources.EnabledName,
                 description: textResources.EnabledDescription
+            );
+            irreversibleSterilizationAttributes.SetText(
+                category: textResources.BreedingCategory,
+                name: textResources.IrreversibleSterilizationName,
+                description: textResources.IrreversibleSterilizationDescription
             );
             shortcutAttributes.SetText(
                 category: textResources.BreedingCategory,
@@ -155,16 +176,25 @@ namespace OffWithTheirNuts {
 
         private void DrawEnabled(ConfigEntryBase entry) {
             bool current = serverSync?.Enabled ?? enabledSetting.Value;
-            bool interactable = instance == this && serverSync.CanChangeEnabled;
+            bool requested = DrawWorldToggle(current);
+            if (requested != current) {
+                serverSync.RequestEnabled(requested);
+            }
+        }
+
+        private void DrawIrreversibleSterilization(ConfigEntryBase entry) {
+            bool current = serverSync?.IsIrreversibleSterilizationEnabled ?? irreversibleSterilizationSetting.Value;
+            bool requested = DrawWorldToggle(current);
+            if (requested != current) {
+                serverSync.RequestIrreversibleSterilization(requested);
+            }
+        }
+
+        private bool DrawWorldToggle(bool current) {
             bool guiEnabled = GUI.enabled;
             try {
-                GUI.enabled = guiEnabled && interactable;
-                bool requested = DrawLocalizedToggle(current);
-                if (requested == current) {
-                    return;
-                }
-
-                serverSync.RequestEnabled(requested);
+                GUI.enabled = guiEnabled && instance == this && serverSync.CanChangeWorldSettings;
+                return DrawLocalizedToggle(current);
             } finally {
                 GUI.enabled = guiEnabled;
             }
@@ -214,8 +244,8 @@ namespace OffWithTheirNuts {
             }
         }
 
-        private void OnEnabledChanged(object sender, EventArgs args) {
-            serverSync?.RefreshEnabledSetting();
+        private void OnWorldSettingChanged(object sender, EventArgs args) {
+            serverSync?.RefreshWorldSettings();
         }
 
         private void OnShortcutChanged(object sender, EventArgs args) {

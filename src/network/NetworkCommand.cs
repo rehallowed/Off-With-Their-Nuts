@@ -7,6 +7,7 @@ namespace OffWithTheirNuts {
         ResetAll = 5,
         OwnerWrites = 6,
         LocalizedNotice = 7,
-        SterilityChangeEffect = 8
+        SterilityChangeEffect = 8,
+        SetIrreversibleSterilization = 9
     }
 }

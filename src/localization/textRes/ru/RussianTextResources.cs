@@ -6,6 +6,8 @@ namespace OffWithTheirNuts {
             "Стерилизован";
         internal override string SterilizeHint =>
             "Стерилизовать";
+        internal override string IrreversibleSterilizationHint =>
+            "Стерилизовать (необратимо)";
         internal override string RestoreFertilityHint =>
             "Вернуть фертильность";
         internal override string BreedingCategory =>
@@ -16,12 +18,17 @@ namespace OffWithTheirNuts {
             "Включить мод";
         internal override string EnabledDescription =>
             "Применять сохранённые статусы стерилизации. В мультиплеере эту настройку задаёт сервер.";
+        internal override string IrreversibleSterilizationName =>
+            "Необратимая стерилизация";
+        internal override string IrreversibleSterilizationDescription =>
+            "Пока настройка включена, отмена стерилизации у отдельных животных запрещена. " +
+            "Администраторы по-прежнему могут сбросить стерилизацию у всех животных сразу.";
         internal override string Enabled =>
             "Включено";
         internal override string Disabled =>
             "Выключено";
         internal override string ShortcutName =>
-            "Переключить стерилизацию";
+            "Назначение клавиши стерилизации";
         internal override string ShortcutDescription =>
             "Наведи прицел на приручённое животное и нажми эту клавишу или сочетание.";
         internal override string SterilizationEffectsName =>
@@ -62,6 +69,8 @@ namespace OffWithTheirNuts {
             "Животное стерилизовано";
         internal override string FertileAgain =>
             "Животное снова фертильно";
+        internal override string FertilityRestorationBlocked =>
+            "Восстановление фертильности запрещено админом";
         internal override string ResetRunning =>
             "Сброс стерилизации уже выполняется.";
         internal override string ResetStarted =>

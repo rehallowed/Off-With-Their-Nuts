@@ -52,6 +52,7 @@ namespace OffWithTheirNuts {
                 );
                 serverSync = new ServerSync(
                     enabledSetting: enabledSetting,
+                    irreversibleSterilizationSetting: irreversibleSterilizationSetting,
                     refreshHotkey: RefreshHotkey,
                     onWorldClosed: OnWorldClosed,
                     startChange: StartChange,
@@ -81,7 +82,10 @@ namespace OffWithTheirNuts {
                 shortcutSetting.SettingChanged -= OnShortcutChanged;
             }
             if (enabledSetting != null) {
-                enabledSetting.SettingChanged -= OnEnabledChanged;
+                enabledSetting.SettingChanged -= OnWorldSettingChanged;
+            }
+            if (irreversibleSterilizationSetting != null) {
+                irreversibleSterilizationSetting.SettingChanged -= OnWorldSettingChanged;
             }
             ReleaseUiLanguage();
             harmony?.UnpatchSelf();

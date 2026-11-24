@@ -7,6 +7,7 @@ namespace OffWithTheirNuts {
         private string lastFormattedHoverText;
         private TextResources lastTextResources;
         private bool lastIsSterile;
+        private bool lastIsIrreversibleSterilizationEnabled;
         private string lastShortcutLabel;
         private string sterileStatusLine;
         private string shortcutLine;
@@ -15,19 +16,23 @@ namespace OffWithTheirNuts {
             string hoverText,
             TextResources textResources,
             bool isSterile,
+            bool isIrreversibleSterilizationEnabled,
             string shortcutLabel
         ) {
             bool shouldUpdateLines = lastTextResources != textResources || lastIsSterile != isSterile ||
+                lastIsIrreversibleSterilizationEnabled != isIrreversibleSterilizationEnabled ||
                 lastShortcutLabel != shortcutLabel;
             if (shouldUpdateLines) {
                 lastTextResources = textResources;
                 lastIsSterile = isSterile;
+                lastIsIrreversibleSterilizationEnabled = isIrreversibleSterilizationEnabled;
                 lastShortcutLabel = shortcutLabel;
                 lastHoverText = null;
                 sterileStatusLine = isSterile ? "\n<color=#FFC6A8>" + textResources.SterileStatus + "</color>" : "";
                 shortcutLine = FormatShortcutLine(
                     textResources: textResources,
                     isSterile: isSterile,
+                    isIrreversibleSterilizationEnabled: isIrreversibleSterilizationEnabled,
                     shortcutLabel: shortcutLabel
                 );
             }
@@ -54,12 +59,21 @@ namespace OffWithTheirNuts {
                 );
         }
 
-        private static string FormatShortcutLine(TextResources textResources, bool isSterile, string shortcutLabel) {
-            if (shortcutLabel == null) {
+        private static string FormatShortcutLine(
+            TextResources textResources,
+            bool isSterile,
+            bool isIrreversibleSterilizationEnabled,
+            string shortcutLabel
+        ) {
+            if (shortcutLabel == null || (isSterile && isIrreversibleSterilizationEnabled)) {
                 return "";
             }
 
-            string action = isSterile ? textResources.RestoreFertilityHint : textResources.SterilizeHint;
+            string action = (isSterile, isIrreversibleSterilizationEnabled) switch {
+                (true, _) => textResources.RestoreFertilityHint,
+                (false, true) => textResources.IrreversibleSterilizationHint,
+                _ => textResources.SterilizeHint
+            };
             return "\n[<color=yellow><b>" + shortcutLabel + "</b></color>] " + action;
         }
     }
@@ -90,6 +104,7 @@ namespace OffWithTheirNuts {
                     hoverText: __result,
                     textResources: mod.uiLanguage.TextResources,
                     isSterile: isSterile,
+                    isIrreversibleSterilizationEnabled: mod.serverSync.IsIrreversibleSterilizationEnabled,
                     shortcutLabel: shouldShowHint ? shortcutLabel : null
                 );
             }

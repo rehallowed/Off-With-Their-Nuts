@@ -11,7 +11,8 @@ namespace OffWithTheirNuts {
         FertileAgain = 7,
         ResetRunning = 8,
         ResetStarted = 9,
-        ResetResult = 10
+        ResetResult = 10,
+        FertilityRestorationBlocked = 11
     }
 
     internal readonly struct PlayerNotice {
@@ -86,6 +87,7 @@ namespace OffWithTheirNuts {
                 PlayerNoticeKind.ChangeUnconfirmed => textResources.ChangeUnconfirmed,
                 PlayerNoticeKind.Sterilized => textResources.Sterilized,
                 PlayerNoticeKind.FertileAgain => textResources.FertileAgain,
+                PlayerNoticeKind.FertilityRestorationBlocked => textResources.FertilityRestorationBlocked,
                 PlayerNoticeKind.ResetRunning => textResources.ResetRunning,
                 PlayerNoticeKind.ResetStarted => textResources.ResetStarted,
                 PlayerNoticeKind.ResetResult => TextMapper.GetFormattedResetResult(

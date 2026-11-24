@@ -51,6 +51,13 @@ namespace OffWithTheirNuts {
                 );
                 return;
             }
+            if (!requestedState && serverSync.IsIrreversibleSterilizationEnabled) {
+                serverSync.Notify(
+                    peer: requester,
+                    kind: PlayerNoticeKind.FertilityRestorationBlocked
+                );
+                return;
+            }
 
             individualChanges.Add(id);
             StartCoroutine(

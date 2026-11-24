@@ -6,6 +6,8 @@ namespace OffWithTheirNuts {
             "Sterile";
         internal override string SterilizeHint =>
             "Sterilize";
+        internal override string IrreversibleSterilizationHint =>
+            "Sterilize (irreversible)";
         internal override string RestoreFertilityHint =>
             "Restore fertility";
         internal override string BreedingCategory =>
@@ -16,12 +18,17 @@ namespace OffWithTheirNuts {
             "Enable mod";
         internal override string EnabledDescription =>
             "Apply saved breeding restrictions. In multiplayer, the server controls this setting.";
+        internal override string IrreversibleSterilizationName =>
+            "Irreversible sterilization";
+        internal override string IrreversibleSterilizationDescription =>
+            "Prevent restoring fertility to individual animals while this setting is enabled. " +
+            "Admins can still reset sterilization for all animals at once.";
         internal override string Enabled =>
             "Enabled";
         internal override string Disabled =>
             "Disabled";
         internal override string ShortcutName =>
-            "Toggle sterility";
+            "Sterilization key binding";
         internal override string ShortcutDescription =>
             "Aim at a tamed animal and press this key or shortcut.";
         internal override string SterilizationEffectsName =>
@@ -62,6 +69,8 @@ namespace OffWithTheirNuts {
             "Animal sterilized";
         internal override string FertileAgain =>
             "Animal is fertile again";
+        internal override string FertilityRestorationBlocked =>
+            "Fertility restoration is disabled by admin";
         internal override string ResetRunning =>
             "A sterility reset is already in progress.";
         internal override string ResetStarted =>

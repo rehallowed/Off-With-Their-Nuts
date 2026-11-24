@@ -7,6 +7,7 @@ using static OffWithTheirNuts.NetworkConfig;
 namespace OffWithTheirNuts {
     internal sealed class ServerSync {
         private readonly ConfigEntry<bool> enabledSetting;
+        private readonly ConfigEntry<bool> irreversibleSterilizationSetting;
         private readonly Action refreshHotkey;
         private readonly Action onWorldClosed;
         private readonly Action<ZNetPeer, ZDOID, bool> startChange;
@@ -15,6 +16,7 @@ namespace OffWithTheirNuts {
         private readonly Action<ZDOID, bool> playSterilityChangeEffect;
         private ZNet network;
         private bool canManageWorld;
+        private bool irreversibleSterilization;
 
         internal ZNet CurrentNetwork => network;
         internal bool HasWorld => !(network is null);
@@ -28,11 +30,15 @@ namespace OffWithTheirNuts {
         }
         internal bool RestrictionsActive => SettingsReady && RestrictionsEnabled;
         internal bool Enabled => network == null ? enabledSetting.Value : RestrictionsEnabled;
-        internal bool CanChangeEnabled => network == null || CanReset;
+        internal bool IsIrreversibleSterilizationEnabled => network == null
+            ? irreversibleSterilizationSetting.Value
+            : irreversibleSterilization;
+        internal bool CanChangeWorldSettings => network == null || CanReset;
         internal bool CanReset => network != null && (network.IsServer() || (SettingsReady && canManageWorld));
 
         internal ServerSync(
             ConfigEntry<bool> enabledSetting,
+            ConfigEntry<bool> irreversibleSterilizationSetting,
             Action refreshHotkey,
             Action onWorldClosed,
             Action<ZNetPeer, ZDOID, bool> startChange,
@@ -41,6 +47,7 @@ namespace OffWithTheirNuts {
             Action<ZDOID, bool> playSterilityChangeEffect
         ) {
             this.enabledSetting = enabledSetting;
+            this.irreversibleSterilizationSetting = irreversibleSterilizationSetting;
             this.refreshHotkey = refreshHotkey;
             this.onWorldClosed = onWorldClosed;
             this.startChange = startChange;
@@ -54,6 +61,7 @@ namespace OffWithTheirNuts {
             network = current;
             SettingsReady = current.IsServer();
             RestrictionsEnabled = SettingsReady && enabledSetting.Value;
+            irreversibleSterilization = SettingsReady && irreversibleSterilizationSetting.Value;
             refreshHotkey();
         }
 
@@ -62,6 +70,7 @@ namespace OffWithTheirNuts {
             SettingsReady = false;
             RestrictionsEnabled = false;
             canManageWorld = false;
+            irreversibleSterilization = false;
             onWorldClosed();
         }
 
@@ -76,9 +85,21 @@ namespace OffWithTheirNuts {
             }
         }
 
-        internal void RefreshEnabledSetting() {
+        internal void RequestIrreversibleSterilization(bool requested) {
+            if (network == null || network.IsServer()) {
+                irreversibleSterilizationSetting.Value = requested;
+            } else {
+                SendToServer(
+                    command: NetworkCommand.SetIrreversibleSterilization,
+                    fill: package => package.Write(requested)
+                );
+            }
+        }
+
+        internal void RefreshWorldSettings() {
             if (network != null && network.IsServer()) {
                 RestrictionsEnabled = enabledSetting.Value;
+                irreversibleSterilization = irreversibleSterilizationSetting.Value;
                 PublishSettings();
                 refreshHotkey();
             }
@@ -153,6 +174,10 @@ namespace OffWithTheirNuts {
                             enabledSetting.Value = package.ReadBool();
                             break;
                         }
+                        case NetworkCommand.SetIrreversibleSterilization when remaining == 1 && IsWorldAdmin(peer): {
+                            irreversibleSterilizationSetting.Value = package.ReadBool();
+                            break;
+                        }
                         case NetworkCommand.Toggle when remaining == TargetWireSize + 1: {
                             startChange(
                                 arg1: peer,
@@ -168,9 +193,10 @@ namespace OffWithTheirNuts {
                     }
                 } else if (isCurrentServer) {
                     switch (command) {
-                        case NetworkCommand.Settings when remaining == 2: {
+                        case NetworkCommand.Settings when remaining == 3: {
                             RestrictionsEnabled = package.ReadBool();
                             canManageWorld = package.ReadBool();
+                            irreversibleSterilization = package.ReadBool();
                             SettingsReady = true;
                             refreshHotkey();
                             break;
@@ -248,6 +274,7 @@ namespace OffWithTheirNuts {
                 fill: package => {
                     package.Write(RestrictionsEnabled);
                     package.Write(IsWorldAdmin(peer));
+                    package.Write(irreversibleSterilization);
                 }
             );
         }

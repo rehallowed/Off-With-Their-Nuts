@@ -28,11 +28,14 @@ namespace OffWithTheirNuts {
 
         internal abstract string SterileStatus { get; }
         internal abstract string SterilizeHint { get; }
+        internal abstract string IrreversibleSterilizationHint { get; }
         internal abstract string RestoreFertilityHint { get; }
         internal abstract string BreedingCategory { get; }
         internal abstract string WorldManagementCategory { get; }
         internal abstract string EnabledName { get; }
         internal abstract string EnabledDescription { get; }
+        internal abstract string IrreversibleSterilizationName { get; }
+        internal abstract string IrreversibleSterilizationDescription { get; }
         internal abstract string Enabled { get; }
         internal abstract string Disabled { get; }
         internal abstract string ShortcutName { get; }
@@ -54,6 +57,7 @@ namespace OffWithTheirNuts {
         internal abstract string ChangeUnconfirmed { get; }
         internal abstract string Sterilized { get; }
         internal abstract string FertileAgain { get; }
+        internal abstract string FertilityRestorationBlocked { get; }
         internal abstract string ResetRunning { get; }
         internal abstract string ResetStarted { get; }
         internal abstract Plural ResetResult { get; }
