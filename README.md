@@ -1,13 +1,17 @@
+[Download v1.0.0 / Скачать v1.0.0](https://github.com/rehallowed/Off-With-Their-Nuts/releases/download/v1.0.0/OffWithTheirNuts_v1.0.0.zip)
+
 [Русское описание / Russian description](#off-with-their-nuts-в-разработке)
 
-# Off With Their Nuts! (in development)
+# Off With Their Nuts!
 
 Regular boars messing up your two-star breeding plans?  
 Have the wolves guarding your base eaten all the deer and filled the woods with their pups?  
 Can't get out of the house because of a herd of lox?  
 **Just cut their nuts off!**
 
-You can sterilize any tamed animal that can breed. A sterilized animal can neither produce offspring nor impregnate another animal. Sterilization is reversible by default.
+The mod lets you prevent individual tamed animals from breeding.  
+A sterilized animal can neither produce offspring nor impregnate another animal.  
+Sterilization is reversible by default.
 
 Seems to work in multiplayer. I built it with multiplayer in mind and tested it in two-player co-op.
 
@@ -16,16 +20,16 @@ Seems to work in multiplayer. I built it with multiplayer in mind and tested it 
 - Aim at an animal and press `U` to sterilize it or undo sterilization. You can change the key or key combination through Valheim Configuration Manager.
 - A status line appears when you aim at a sterilized animal.
 - You can suspend all breeding restrictions in the mod settings. The mod remembers which animals were sterilized, and the restrictions take effect again when you re-enable it.
-- The mod settings also have a button to undo sterilization for every animal in the world, including those in unloaded areas. The button is available in single-player and to all admins in multiplayer.
-- The mod supports English and Russian. It uses English if your game is set to any other language.
+- Admins can make sterilization irreversible. While this setting is enabled, you cannot undo sterilization for an individual animal.
+- The administration section has a button to undo sterilization for every animal in the world, including those in unloaded areas. The button is available in single-player and to all admins in multiplayer.
+- You can safely uninstall the mod by deleting its files. The administration section has a button to remove mod data from the world if you want to leave no traces in your saves or need to debug something.
+- The mod supports English, Russian, Portuguese, Spanish, German, Polish, Turkish, Ukrainian, French, Chinese, and Japanese. It uses English if your game is set to any other language.
 
 ### Status
 
-The mod is still in development.
-
-Mod version: `v0.2.0-beta`
-
 Tested on the Deep North Update and confirmed compatible.
+
+Mod version: `v1.0.0`
 
 Target versions:
 - Valheim `1.0.21`
@@ -45,50 +49,47 @@ Extract the archive and move the "OffWithTheirNuts" folder into your plugins fol
 - Windows: `C:\Program Files (x86)\Steam\steamapps\common\Valheim\BepInEx\plugins`
 - macOS: `~/Library/Application Support/Steam/steamapps/common/Valheim/BepInEx/plugins`
 
-In multiplayer, the server and every player need the mod installed.
+In multiplayer, the server and every player need the same version of the mod.
 
-[Download version 0.2.0-beta](https://github.com/rehallowed/Off-With-Their-Nuts/releases/download/v0.2.0-beta/OffWithTheirNuts_v0.2.0-beta.zip)
+[Download version 1.0.0](https://github.com/rehallowed/Off-With-Their-Nuts/releases/download/v1.0.0/OffWithTheirNuts_v1.0.0.zip)
 
 The mod requires BepInEx and Jötunn. Valheim Configuration Manager is optional.
 
 ### To do
 
-- Add a toggle for the sterilization sound and visual effects.
-- Show the current shortcut and what it does when aiming at an animal.
-- Add a button for the host or single-player user to remove all mod data from the world save.
-- Add an admin option to make sterilization irreversible.
-- Add support for more languages.
 - Publish on Thunderstore and maybe on Nexus Mods.
 
 </details>
 
 
-# Off With Their Nuts! (в разработке)
+# Off With Their Nuts!
 
 Обычные свиньи мешают размножаться двухзвёздочным?  
 Охраняющие базу волки сожрали всех оленей и заполонили леса своими отпрысками?  
 Толпа быкоящеров не даёт выйти из дома?   
 **Почему бы вам не отрезать им яйца!**
 
-Мод позволяет выборочно запретить размножение любому приручённому животному, которое может размножаться. Стерилизованное животное не может дать потомство или оплодотворить другую особь. По умолчанию стерилизация обратима.
+Мод позволяет выборочно запретить размножение приручённому животному.  
+Стерилизованное животное не сможет дать потомство или оплодотворить другую особь.  
+По умолчанию стерилизация обратима.
 
-Вроде как работает в мультиплеере. По крайней мере, писал я его с расчётом на мультиплеер, а потом проверил в коопе на двоих.
+Вроде как мод работает в мультиплеере. По крайней мере, писал я его с расчётом на мультиплеер, а потом проверил в коопе на двоих.
 
 ### Функции
 
 - Стерилизация или её отмена делается нажатием клавиши `U` при наведении на животное. Клавишу или сочетание можно сменить в конфиге (доступен через Valheim Configuration Manager).
 - При наведении на животное, если оно стерилизовано, отображается соответствующий статус.
-- В настройках мода можно глобально отключить работу эффекта стерилизации. При этом статусы стерилизации животных сохраняются и продолжат действовать при включении.
-- Также в настройках мода есть кнопка сброса статуса стерилизации у всех животных в мире, втч в выгруженных зонах. Кнопка доступна в одиночной игре, а также всем админам в многопользовательской игре.
-- Мод поддерживает английский и русский языки. Если в игре выбран другой язык, мод будет отображаться на английском.
+- В настройках мода можно глобально отключить действие стерилизации. При этом статусы стерилизации животных сохраняются и продолжат действовать при включении.
+- Админы могут включить необратимость стерилизации. Пока эта настройка включена, отменить стерилизацию у отдельного животного нельзя.
+- В админской секции настроек есть кнопка сброса статуса стерилизации для всех животных в мире, втч в выгруженных зонах. Кнопка доступна в одиночной игре, а также всем админам в многопользовательской игре.
+- Мод можно безопасно удалить простым удалением его файлов. На случай, если захочется не оставлять следов в сохранениях, а также для дебага, в админской секции настроек есть кнопка удаления данных мода.
+- Поддержаны английский, русский, португальский, испанский, немецкий, польский, турецкий, украинский, французский, китайский и японский языки. Если в игре выбран другой язык, мод будет отображаться на английском.
 
 ### Статус
 
-Мод пока в разработке.
-
 Проверен и совместим с Deep North Update.
 
-Версия мода: `v0.2.0-beta`
+Версия мода: `v1.0.0`
 
 Целевые версии:
  - Valheim `1.0.21`
@@ -107,17 +108,12 @@ The mod requires BepInEx and Jötunn. Valheim Configuration Manager is optional.
 - На Windows: `C:\Program Files (x86)\Steam\steamapps\common\Valheim\BepInEx\plugins`.
 - На macOS: `~/Library/Application Support/Steam/steamapps/common/Valheim/BepInEx/plugins`.
 
-Для многопользовательской игры мод надо ставить и на сервер, и каждому игроку.
+Для многопользовательской игры надо ставить одну версию мода и на сервер, и каждому игроку.
 
-[Скачать версию 0.2.0-beta](https://github.com/rehallowed/Off-With-Their-Nuts/releases/download/v0.2.0-beta/OffWithTheirNuts_v0.2.0-beta.zip)
+[Скачать версию 1.0.0](https://github.com/rehallowed/Off-With-Their-Nuts/releases/download/v1.0.0/OffWithTheirNuts_v1.0.0.zip)
 
 Для работы мода требуются BepInEx, Jötunn и опционально Valheim Configuration Manager.
 
 ### Туду
 
-- Настройка для включения и отключения эффектов стерилизации.
-- Подсказка с текущей клавишей и доступным действием при наведении на животное.
-- Кнопка полной очистки данных мода из сохранения мира для хоста и одиночной игры.
-- Админская опция необратимости стерилизации.
-- Локализации на другие языки.
 - Залить на thunderstore и мб на nexus.
