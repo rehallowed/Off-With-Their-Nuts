@@ -20,7 +20,9 @@ namespace OffWithTheirNuts {
 
         internal sealed class ChangeResult {
             internal int Changed;
-            internal int Unconfirmed;
+            internal int Missing;
+            internal int TimedOut;
+            internal int Unconfirmed => Missing + TimedOut;
         }
 
         internal static IEnumerator ApplyChanges(
@@ -58,7 +60,7 @@ namespace OffWithTheirNuts {
                 }
                 yield return wait;
             }
-            result.Unconfirmed += remaining.Count;
+            result.TimedOut += remaining.Count;
         }
 
         private static void ProcessPendingWrites(
@@ -73,7 +75,7 @@ namespace OffWithTheirNuts {
                 TargetWrite write = remaining[i];
                 ZDO zdo = ZDOMan.instance.GetZDO(write.Id);
                 if (zdo == null) {
-                    result.Unconfirmed++;
+                    result.Missing++;
                     remaining.RemoveAt(i);
                     continue;
                 }

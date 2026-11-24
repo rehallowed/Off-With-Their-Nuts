@@ -76,12 +76,13 @@ namespace OffWithTheirNuts {
                     string.Format(
                         provider: CultureInfo.InvariantCulture,
                         format: "Sterility reset. Scanned {0} ZDO records in {1:F1} ms, " +
-                            "cleared {2} flags, {3} unconfirmed, {4:F1} ms total.",
+                            "cleared {2} flags, {3} records missing, {4} confirmation timeouts, {5:F1} ms total.",
                         args: new object[] {
                             scanned,
                             scan.Elapsed.TotalMilliseconds,
                             result.Changed,
-                            result.Unconfirmed,
+                            result.Missing,
+                            result.TimedOut,
                             duration.Elapsed.TotalMilliseconds
                         }
                     )
