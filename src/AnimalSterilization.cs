@@ -8,16 +8,30 @@ namespace OffWithTheirNuts {
         private readonly HashSet<ZDOID> individualChanges = new HashSet<ZDOID>();
 
         private void ToggleTarget(Character target) {
+            ZNet network = serverSync.CurrentNetwork;
+            if (network == null) {
+                return;
+            }
+
             ZNetView view = target.GetComponent<ZNetView>();
             if (view == null || !view.IsValid() || !IsSterilizable(target.GetComponent<Tameable>())) {
                 return;
             }
 
             ZDO zdo = view.GetZDO();
-            serverSync.RequestChange(
-                id: zdo.m_uid,
-                requested: !ZdoSterilityOperations.IsSterile(zdo)
-            );
+            bool requestedState = !ZdoSterilityOperations.IsSterile(zdo);
+            if (network.IsServer()) {
+                StartChange(
+                    requester: null,
+                    id: zdo.m_uid,
+                    requestedState: requestedState
+                );
+            } else {
+                serverSync.RequestChange(
+                    id: zdo.m_uid,
+                    requested: requestedState
+                );
+            }
         }
 
         private void StartChange(ZNetPeer requester, ZDOID id, bool requestedState) {

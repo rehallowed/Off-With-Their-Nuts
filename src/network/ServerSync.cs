@@ -106,21 +106,13 @@ namespace OffWithTheirNuts {
         }
 
         internal void RequestChange(ZDOID id, bool requested) {
-            if (network.IsServer()) {
-                startChange(
-                    arg1: null,
-                    arg2: id,
-                    arg3: requested
-                );
-            } else {
-                SendToServer(
-                    command: NetworkCommand.Toggle,
-                    fill: package => {
-                        package.Write(id);
-                        package.Write(requested);
-                    }
-                );
-            }
+            SendToServer(
+                command: NetworkCommand.Toggle,
+                fill: package => {
+                    package.Write(id);
+                    package.Write(requested);
+                }
+            );
         }
 
         internal void RequestReset() {
