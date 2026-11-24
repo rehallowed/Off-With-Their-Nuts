@@ -1,6 +1,6 @@
 namespace OffWithTheirNuts {
     internal sealed class EnglishTextResources : TextResources {
-        internal override PluralRules PluralRules { get; } = new EnglishPluralRules();
+        internal override PluralRules PluralRules { get; } = new OneOrOtherPluralRules();
 
         internal override string SterileStatus =>
             "Sterile";
@@ -21,7 +21,7 @@ namespace OffWithTheirNuts {
         internal override string EnabledDescription =>
             "Apply saved breeding restrictions. In multiplayer, the server controls this setting.";
         internal override string IrreversibleSterilizationName =>
-            "Irreversible sterilization";
+            "Sterilization irreversibility";
         internal override string IrreversibleSterilizationDescription =>
             "Prevent restoring fertility to individual animals while this setting is enabled. " +
             "Admins can still reset sterilization for all animals at once.";
@@ -30,7 +30,7 @@ namespace OffWithTheirNuts {
         internal override string Disabled =>
             "Disabled";
         internal override string ShortcutName =>
-            "Sterilization key binding";
+            "Key binding";
         internal override string ShortcutDescription =>
             "Aim at a tamed animal and press this key or shortcut.";
         internal override string SterilizationEffectsName =>
@@ -38,13 +38,13 @@ namespace OffWithTheirNuts {
         internal override string SterilizationEffectsDescription =>
             "Play sounds and visual effects when an animal is sterilized or its fertility is restored.";
         internal override string ResetName =>
-            "Reset all breeding restrictions";
+            "Sterilization reset";
         internal override string ResetDescription =>
             "Restore fertility to all sterile animals in the current world.";
         internal override string ResetButton =>
-            "Reset all breeding restrictions";
+            "Undo all sterilizations";
         internal override string CleanupName =>
-            "Mod data cleanup";
+            "Mod data removal";
         internal override string CleanupDescription =>
             "Remove all mod data from the current world's save. " +
             "Start the cleanup with no other players connected. " +
@@ -60,7 +60,7 @@ namespace OffWithTheirNuts {
         internal override string ChangePending =>
             "A change is already in progress. Try again when it finishes.";
         internal override string TargetUnavailable =>
-            "Move closer to a tamed animal that can breed.";
+            "Could not change the animal's status. Move closer and try again.";
         internal override string AlreadySterile =>
             "This animal is already sterile.";
         internal override string AlreadyFertile =>

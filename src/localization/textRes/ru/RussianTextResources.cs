@@ -1,6 +1,6 @@
 namespace OffWithTheirNuts {
     internal sealed class RussianTextResources : TextResources {
-        internal override PluralRules PluralRules { get; } = new RussianPluralRules();
+        internal override PluralRules PluralRules { get; } = new EastSlavicPluralRules();
 
         internal override string SterileStatus =>
             "Стерилизован";
@@ -21,7 +21,7 @@ namespace OffWithTheirNuts {
         internal override string EnabledDescription =>
             "Применять сохранённые статусы стерилизации. В мультиплеере эту настройку задаёт сервер.";
         internal override string IrreversibleSterilizationName =>
-            "Необратимая стерилизация";
+            "Необратимость стерилизации";
         internal override string IrreversibleSterilizationDescription =>
             "Пока настройка включена, отмена стерилизации у отдельных животных запрещена. " +
             "Администраторы по-прежнему могут сбросить стерилизацию у всех животных сразу.";
@@ -30,7 +30,7 @@ namespace OffWithTheirNuts {
         internal override string Disabled =>
             "Выключено";
         internal override string ShortcutName =>
-            "Назначение клавиши стерилизации";
+            "Назначение клавиши";
         internal override string ShortcutDescription =>
             "Наведи прицел на приручённое животное и нажми эту клавишу или сочетание.";
         internal override string SterilizationEffectsName =>
@@ -42,9 +42,9 @@ namespace OffWithTheirNuts {
         internal override string ResetDescription =>
             "Снять статус стерилизации со всех отмеченных животных текущего мира.";
         internal override string ResetButton =>
-            "Сбросить всю стерилизацию";
+            "Отменить стерилизацию у всех";
         internal override string CleanupName =>
-            "Удалить данные мода";
+            "Удаление данных мода";
         internal override string CleanupDescription =>
             "Удалить все данные мода из сохранения текущего мира. " +
             "Запускай очистку без подключённых игроков. " +
@@ -60,7 +60,7 @@ namespace OffWithTheirNuts {
         internal override string ChangePending =>
             "Изменение уже выполняется. Повтори после завершения.";
         internal override string TargetUnavailable =>
-            "Подойди к приручённому животному, которое может размножаться.";
+            "Не удалось изменить статус животного. Подойди ближе и попробуй снова.";
         internal override string AlreadySterile =>
             "Животное уже стерилизовано.";
         internal override string AlreadyFertile =>
