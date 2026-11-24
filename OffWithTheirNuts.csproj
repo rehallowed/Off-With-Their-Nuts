@@ -11,6 +11,10 @@
     <ValheimManagedDir>$(ValheimReferenceRoot)/valheim.app/Contents/Resources/Data/Managed</ValheimManagedDir>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Compile Remove="tests/**/*.cs" />
+  </ItemGroup>
+
   <ItemDefinitionGroup>
     <Reference>
       <Private>false</Private>

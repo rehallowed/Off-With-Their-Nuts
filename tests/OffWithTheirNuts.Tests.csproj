@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>10.0</LangVersion>
+    <ValheimReferenceRoot Condition="'$(ValheimReferenceRoot)' == ''">$(MSBuildThisFileDirectory)../../../tools/valheim-1.0.21-refs</ValheimReferenceRoot>
+    <ValheimManagedDir Condition="'$(ValheimManagedDir)' == ''">$(ValheimReferenceRoot)/valheim.app/Contents/Resources/Data/Managed</ValheimManagedDir>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="../src/Constants.cs;../src/PlayerNotice.cs;../src/AnimalHoverText.cs;../src/AnimalSterilization.cs;../src/ZdoSterilityOperations.cs" />
+    <Compile Include="../src/localization/**/*.cs;../src/network/*.cs" />
+    <Reference Include="assembly_valheim" HintPath="$(ValheimManagedDir)/assembly_valheim.dll" Aliases="valheim" />
+    <Reference Include="assembly_utils" HintPath="$(ValheimManagedDir)/assembly_utils.dll" Aliases="valheim" />
+    <Reference Include="UnityEngine" HintPath="$(ValheimManagedDir)/UnityEngine.dll" Aliases="valheim" />
+    <Reference Include="UnityEngine.CoreModule" HintPath="$(ValheimManagedDir)/UnityEngine.CoreModule.dll" Aliases="valheim" />
+  </ItemGroup>
+
+  <Target Name="CheckValheimTestReferences" BeforeTargets="ResolveAssemblyReferences">
+    <Error Condition="!Exists('$(ValheimManagedDir)/assembly_valheim.dll')"
+           Text="Set ValheimManagedDir to the directory containing the Valheim managed assemblies." />
+  </Target>
+</Project>
