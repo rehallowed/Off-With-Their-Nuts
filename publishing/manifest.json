@@ -1,0 +1,9 @@
+{
+  "name": "OffWithTheirNuts",
+  "description": "Prevent tamed animals from breeding.",
+  "version_number": "1.0.0",
+  "website_url": "https://github.com/rehallowed/Off-With-Their-Nuts",
+  "dependencies": [
+    "ValheimModding-Jotunn-2.30.2"
+  ]
+}
