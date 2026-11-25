@@ -1,4 +1,3 @@
-[Русское описание / Russian description](#off-with-their-nuts-1)
 # Off With Their Nuts!
 
 Regular boars messing up your two-star breeding plans?  
